@@ -113,12 +113,13 @@ export const TodayPage = () => {
         </div>
 
         {/* Date Selector Shortcuts */}
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center bg-white dark:bg-surface-800 border border-slate-200 dark:border-surface-700 rounded-xl p-1 shadow-sm">
             <button
               onClick={() => handleDateShift(-1)}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-text-primary hover:bg-slate-100 dark:hover:bg-surface-700 transition-colors"
+              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-text-primary hover:bg-slate-100 dark:hover:bg-surface-700 transition-colors"
               title="Previous day"
+              aria-label="Previous day"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -130,8 +131,9 @@ export const TodayPage = () => {
             />
             <button
               onClick={() => handleDateShift(1)}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-text-primary hover:bg-slate-100 dark:hover:bg-surface-700 transition-colors"
+              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-text-primary hover:bg-slate-100 dark:hover:bg-surface-700 transition-colors"
               title="Next day"
+              aria-label="Next day"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -143,7 +145,7 @@ export const TodayPage = () => {
               size="sm"
               onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))}
             >
-              Jump to Today
+              Today
             </Button>
           )}
 

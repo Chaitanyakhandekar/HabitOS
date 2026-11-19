@@ -51,3 +51,16 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.45);
 }
+
+/* Mobile tap interaction optimization */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area padding utilities for mobile viewports */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+.mb-safe {
+  margin-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
