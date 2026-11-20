@@ -16,6 +16,7 @@ import GoalsPage from '../pages/GoalsPage.jsx';
 import JournalPage from '../pages/JournalPage.jsx';
 import AchievementsPage from '../pages/AchievementsPage.jsx';
 import SettingsPage from '../pages/SettingsPage.jsx';
+import MorePage from '../pages/MorePage.jsx';
 
 export const router = createBrowserRouter([
   // Public Auth Routes
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
           { path: '/journal', element: <JournalPage /> },
           { path: '/achievements', element: <AchievementsPage /> },
           { path: '/settings', element: <SettingsPage /> },
+          { path: '/more', element: <MorePage /> },
         ],
       },
     ],

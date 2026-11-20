@@ -5,7 +5,7 @@ import {
   Calendar,
   Plus,
   BarChart2,
-  User,
+  Menu,
 } from 'lucide-react';
 import { cn } from '../../utils/cn.js';
 
@@ -16,7 +16,13 @@ export const MobileBottomNav = ({ onOpenQuickAction }) => {
   const isHomeActive = currentPath === '/dashboard' || currentPath === '/' || currentPath === '/today';
   const isCalendarActive = currentPath.startsWith('/calendar');
   const isAnalyticsActive = currentPath.startsWith('/analytics');
-  const isProfileActive = currentPath.startsWith('/settings');
+  const isMoreActive =
+    currentPath.startsWith('/more') ||
+    currentPath.startsWith('/habits') ||
+    currentPath.startsWith('/goals') ||
+    currentPath.startsWith('/journal') ||
+    currentPath.startsWith('/achievements') ||
+    currentPath.startsWith('/settings');
 
   return (
     <nav
@@ -59,7 +65,7 @@ export const MobileBottomNav = ({ onOpenQuickAction }) => {
           <button
             type="button"
             onClick={onOpenQuickAction}
-            className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#FF5A36] to-[#FF7A5C] text-white shadow-lg shadow-coral/40 flex items-center justify-center -translate-y-3 hover:scale-105 active:scale-95 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-coral/25"
+            className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#FF5A36] to-[#FF7A5C] text-white shadow-lg shadow-coral/40 flex items-center justify-center -translate-y-3 hover:scale-105 active:scale-95 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-coral/25 cursor-pointer"
             aria-label="Quick Actions"
           >
             <Plus className="w-6 h-6 stroke-[2.5]" />
@@ -81,19 +87,19 @@ export const MobileBottomNav = ({ onOpenQuickAction }) => {
           <span className="text-[10px] mt-1 tracking-tight">Analytics</span>
         </NavLink>
 
-        {/* 5. Profile */}
+        {/* 5. More */}
         <NavLink
-          to="/settings"
+          to="/more"
           className={cn(
             'flex-1 min-w-[50px] min-h-[46px] flex flex-col items-center justify-center py-1 rounded-2xl transition-all duration-200 active:scale-95 focus:outline-none',
-            isProfileActive
+            isMoreActive
               ? 'text-coral font-bold'
               : 'text-warm-400 dark:text-warm-500 hover:text-warm-700 dark:hover:text-warm-300'
           )}
-          aria-label="Profile"
+          aria-label="More"
         >
-          <User className="w-5 h-5 stroke-[2]" />
-          <span className="text-[10px] mt-1 tracking-tight">Profile</span>
+          <Menu className="w-5 h-5 stroke-[2]" />
+          <span className="text-[10px] mt-1 tracking-tight">More</span>
         </NavLink>
       </div>
     </nav>

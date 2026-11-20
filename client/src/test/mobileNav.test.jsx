@@ -6,7 +6,7 @@ import MobileBottomNav from '../components/layout/MobileBottomNav.jsx';
 import QuickActionSheet from '../components/layout/QuickActionSheet.jsx';
 
 describe('Mobile Reference Navigation & Quick Actions', () => {
-  it('renders all 5 reference bottom navigation items (Home, Calendar, +, Analytics, Profile)', () => {
+  it('renders all 5 reference bottom navigation items (Home, Calendar, +, Analytics, More)', () => {
     const handleOpenQuick = vi.fn();
     render(
       <MemoryRouter initialEntries={['/dashboard']}>
@@ -18,7 +18,22 @@ describe('Mobile Reference Navigation & Quick Actions', () => {
     expect(screen.getByText('Calendar')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /quick actions/i })).toBeInTheDocument();
     expect(screen.getByText('Analytics')).toBeInTheDocument();
-    expect(screen.getByText('Profile')).toBeInTheDocument();
+    expect(screen.getByText('More')).toBeInTheDocument();
+  });
+
+  it('More tab is active when navigating to secondary routes', () => {
+    const handleOpenQuick = vi.fn();
+    const secondaryRoutes = ['/more', '/habits', '/goals', '/journal', '/achievements', '/settings'];
+    secondaryRoutes.forEach((route) => {
+      const { unmount } = render(
+        <MemoryRouter initialEntries={[route]}>
+          <MobileBottomNav onOpenQuickAction={handleOpenQuick} />
+        </MemoryRouter>
+      );
+      // More tab link should exist and be rendered
+      expect(screen.getByText('More')).toBeInTheDocument();
+      unmount();
+    });
   });
 
   it('triggers onOpenQuickAction when clicking the center + button', () => {

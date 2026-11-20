@@ -16,7 +16,7 @@ import { Button } from '../components/ui/Button.jsx';
 import { Badge } from '../components/ui/Badge.jsx';
 import analyticsApi from '../services/analytics.api.js';
 import habitsApi from '../services/habits.api.js';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { cn } from '../utils/cn.js';
 
 export const CalendarPage = () => {
@@ -24,7 +24,8 @@ export const CalendarPage = () => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().slice(0, 10)
   );
-  const [showMatrix, setShowMatrix] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const showMatrix = searchParams.get('view') === 'matrix';
 
   // Year and Month
   const year = currentDate.getFullYear();
@@ -129,10 +130,37 @@ export const CalendarPage = () => {
         </div>
 
         <button
-          onClick={() => setShowMatrix(!showMatrix)}
-          className="text-xs font-bold text-coral bg-peach-light dark:bg-surface-700 px-3.5 py-1.5 rounded-full hover:bg-peach dark:hover:bg-surface-600 transition-colors"
+          onClick={() => setSearchParams({ view: showMatrix ? 'calendar' : 'matrix' })}
+          className="text-xs font-bold text-coral bg-peach-light dark:bg-surface-700 px-3.5 py-1.5 rounded-full hover:bg-peach dark:hover:bg-surface-600 transition-colors hidden"
+          aria-hidden="true"
         >
           {showMatrix ? 'Show Month' : 'Annual Heatmap'}
+        </button>
+      </div>
+
+      {/* View Segmented Control */}
+      <div className="flex items-center p-1 bg-warm-100 dark:bg-surface-700/60 rounded-full border border-warm-200/70 dark:border-surface-600 w-fit mx-auto">
+        <button
+          onClick={() => setSearchParams({ view: 'calendar' })}
+          className={cn(
+            'px-5 py-1.5 text-xs font-bold rounded-full transition-all duration-200',
+            !showMatrix
+              ? 'bg-white dark:bg-surface-800 text-coral shadow-sm'
+              : 'text-warm-500 dark:text-warm-400 hover:text-warm-700 dark:hover:text-warm-200'
+          )}
+        >
+          Calendar
+        </button>
+        <button
+          onClick={() => setSearchParams({ view: 'matrix' })}
+          className={cn(
+            'px-5 py-1.5 text-xs font-bold rounded-full transition-all duration-200',
+            showMatrix
+              ? 'bg-white dark:bg-surface-800 text-coral shadow-sm'
+              : 'text-warm-500 dark:text-warm-400 hover:text-warm-700 dark:hover:text-warm-200'
+          )}
+        >
+          Habit Matrix
         </button>
       </div>
 

@@ -24,6 +24,7 @@ export const Navbar = ({ onQuickAdd }) => {
     if (path.startsWith('/goals')) return "Goals";
     if (path.startsWith('/achievements')) return "Achievements";
     if (path.startsWith('/settings')) return "Profile & Settings";
+    if (path.startsWith('/more')) return "More";
     return "HabitOS";
   };
 
