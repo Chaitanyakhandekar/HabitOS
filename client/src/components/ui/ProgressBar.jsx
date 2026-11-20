@@ -20,21 +20,21 @@ export const ProgressBar = ({
   return (
     <div className="w-full">
       {showLabel && (
-        <div className="flex justify-between items-center text-xs font-semibold text-slate-600 dark:text-text-secondary mb-1">
+        <div className="flex justify-between items-center text-xs font-semibold text-warm-700 dark:text-warm-300 mb-1">
           <span>Progress</span>
           <span>{percentage}%</span>
         </div>
       )}
       <div
         className={cn(
-          'w-full bg-slate-100 dark:bg-surface-700 rounded-full overflow-hidden',
+          'w-full bg-peach-light dark:bg-surface-700 rounded-full overflow-hidden',
           sizes[size],
           className
         )}
       >
         <div
           className={cn(
-            'h-full bg-indigo-600 dark:bg-indigo-500 rounded-full transition-all duration-300 ease-out',
+            'h-full bg-coral dark:bg-coral-400 rounded-full transition-all duration-300 ease-out',
             barClassName
           )}
           style={{ width: `${percentage}%` }}

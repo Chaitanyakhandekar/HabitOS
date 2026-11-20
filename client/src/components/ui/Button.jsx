@@ -18,25 +18,25 @@ export const Button = React.forwardRef(
   ) => {
     const variants = {
       primary:
-        'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-500/20 active:translate-y-[1px]',
+        'bg-coral hover:bg-coral-600 text-white shadow-sm shadow-coral/30 active:scale-[0.98] transition-all',
       secondary:
-        'bg-slate-100 dark:bg-surface-700 hover:bg-slate-200 dark:hover:bg-surface-600 text-slate-800 dark:text-text-primary border border-slate-200 dark:border-surface-600',
+        'bg-peach-light dark:bg-surface-700 hover:bg-coral-100 dark:hover:bg-surface-600 text-coral-800 dark:text-coral-300 border border-coral/15 transition-all',
       outline:
-        'border border-slate-300 dark:border-surface-600 hover:bg-slate-100 dark:hover:bg-surface-700 text-slate-700 dark:text-text-secondary',
+        'border border-warm-300 dark:border-surface-600 hover:bg-warm-100 dark:hover:bg-surface-700 text-warm-700 dark:text-warm-300 transition-all',
       ghost:
-        'hover:bg-slate-100 dark:hover:bg-surface-700 text-slate-700 dark:text-text-secondary hover:text-slate-900 dark:hover:text-text-primary',
+        'hover:bg-warm-100 dark:hover:bg-surface-700 text-warm-700 dark:text-warm-300 hover:text-warm-900 dark:hover:text-warm-100 transition-all',
       danger:
-        'bg-rose-600 hover:bg-rose-500 text-white shadow-sm shadow-rose-500/20',
+        'bg-red-500 hover:bg-red-600 text-white shadow-sm shadow-red-500/20 active:scale-[0.98]',
       success:
-        'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-500/20',
+        'bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm shadow-emerald-500/20 active:scale-[0.98]',
     };
 
     const sizes = {
-      xs: 'px-2.5 py-1 text-xs rounded-md',
-      sm: 'px-3 py-1.5 text-xs font-medium rounded-lg',
-      md: 'px-4 py-2 text-sm font-medium rounded-lg',
-      lg: 'px-5 py-2.5 text-base font-medium rounded-xl',
-      icon: 'p-2 rounded-lg',
+      xs: 'px-3 py-1 text-xs rounded-full',
+      sm: 'px-4 py-1.5 text-xs font-semibold rounded-full',
+      md: 'px-5 py-2.5 text-sm font-semibold rounded-full',
+      lg: 'px-6 py-3 text-base font-semibold rounded-full',
+      icon: 'p-2.5 rounded-full',
     };
 
     return (
@@ -45,7 +45,7 @@ export const Button = React.forwardRef(
         type={type}
         disabled={disabled || isLoading}
         className={cn(
-          'inline-flex items-center justify-center font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 disabled:opacity-50 disabled:pointer-events-none select-none',
+          'inline-flex items-center justify-center font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-coral/40 disabled:opacity-50 disabled:pointer-events-none select-none cursor-pointer',
           variants[variant],
           sizes[size],
           className

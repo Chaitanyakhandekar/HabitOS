@@ -61,16 +61,16 @@ export const LoginPage = () => {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-text-primary">
+        <h2 className="text-xl font-extrabold text-warm-900 dark:text-warm-100">
           Sign In
         </h2>
-        <p className="text-xs text-slate-500 dark:text-text-muted mt-1">
-          Access your personal habit dashboard and metrics.
+        <p className="text-xs text-warm-500 dark:text-warm-400 mt-1">
+          Access your personal habit dashboard and routine metrics.
         </p>
       </div>
 
       {errorMsg && (
-        <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-xs text-rose-700 dark:text-rose-300">
+        <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-xs text-red-700 dark:text-red-300">
           {errorMsg}
         </div>
       )}
@@ -94,7 +94,7 @@ export const LoginPage = () => {
 
         <Button
           type="submit"
-          className="w-full mt-2"
+          className="w-full mt-2 py-3"
           size="lg"
           isLoading={isLoading}
         >
@@ -104,22 +104,22 @@ export const LoginPage = () => {
       </form>
 
       {/* Demo Credentials Quick Button */}
-      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-surface-700">
+      <div className="mt-5 pt-4 border-t border-warm-100 dark:border-surface-700">
         <button
           type="button"
           onClick={fillDemoCredentials}
-          className="w-full flex items-center justify-center py-2 px-3 text-xs font-semibold rounded-lg bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 transition-colors"
+          className="w-full flex items-center justify-center py-2.5 px-3 text-xs font-bold rounded-full bg-peach-light dark:bg-surface-700 hover:bg-peach text-coral dark:text-coral-300 border border-coral/20 transition-colors cursor-pointer"
         >
           <KeyRound className="w-3.5 h-3.5 mr-2" />
-          Populate Demo Account (Alex Mercer)
+          Fill Demo Account (Alex Mercer)
         </button>
       </div>
 
-      <div className="mt-6 text-center text-xs text-slate-500 dark:text-text-muted">
+      <div className="mt-6 text-center text-xs text-warm-500 dark:text-warm-400">
         Don&apos;t have an account?{' '}
         <Link
           to="/register"
-          className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+          className="font-bold text-coral hover:underline"
         >
           Create one now
         </Link>

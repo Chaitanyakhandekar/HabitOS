@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,14 +9,38 @@ import { Button } from '../ui/Button.jsx';
 import habitsApi from '../../services/habits.api.js';
 import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import {
+  Bell,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Check,
+  MoreVertical,
+  ArrowLeft,
+  Flame,
+  Music,
+  BookOpen,
+  Footprints,
+  Moon,
+  Palette,
+  Bike,
+  LayoutGrid,
+  Droplets,
+  Dumbbell,
+  Code2,
+  Heart,
+  Coffee,
+  CheckCircle2,
+} from 'lucide-react';
 import { cn } from '../../utils/cn.js';
 
 const habitSchema = z.object({
   name: z.string().min(1, 'Habit name is required').max(120),
   description: z.string().max(500).optional(),
   category: z.string().default('personal'),
-  icon: z.string().default('CheckCircle2'),
-  color: z.string().default('#6366f1'),
+  icon: z.string().default('Yoga'),
+  color: z.string().default('#FF6B4A'),
   trackingType: z.enum(['binary', 'quantity', 'duration', 'target']).default('binary'),
   targetValue: z.number().min(0.01, 'Target must be positive').default(1),
   targetUnit: z.string().default('times'),
@@ -33,6 +57,22 @@ const habitSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
 });
 
+// Reference screenshot habit icons
+const ICON_CHOICES = [
+  { id: 'Yoga', label: 'Yoga', icon: Heart, bg: 'bg-[#FFF0E8] text-[#FF6B4A]' },
+  { id: 'Singing', label: 'Singing', icon: Music, bg: 'bg-[#F2EEFF] text-[#8B5CF6]' },
+  { id: 'Reading', label: 'Reading', icon: BookOpen, bg: 'bg-[#EBF8F2] text-[#10B981]' },
+  { id: 'Running', label: 'Running', icon: Footprints, bg: 'bg-[#FFF7E6] text-[#F59E0B]' },
+  { id: 'Sleeping', label: 'Sleeping', icon: Moon, bg: 'bg-[#EEF4FF] text-[#3B82F6]' },
+  { id: 'Drawing', label: 'Drawing', icon: Palette, bg: 'bg-[#FFF0F4] text-[#EC4899]' },
+  { id: 'Cycling', label: 'Cycling', icon: Bike, bg: 'bg-[#E6FAF7] text-[#06B6D4]' },
+  { id: 'All In', label: 'All In', icon: LayoutGrid, bg: 'bg-[#F5F2ED] text-[#64748B]' },
+  { id: 'Water', label: 'Hydration', icon: Droplets, bg: 'bg-[#E8F2FF] text-[#0284C7]' },
+  { id: 'Gym', label: 'Fitness', icon: Dumbbell, bg: 'bg-[#FFF0EB] text-[#EA580C]' },
+  { id: 'Code', label: 'Coding', icon: Code2, bg: 'bg-[#F3EFFC] text-[#7C3AED]' },
+  { id: 'Coffee', label: 'Routine', icon: Coffee, bg: 'bg-[#FFF8E7] text-[#D97706]' },
+];
+
 const CATEGORIES = [
   { id: 'health', label: 'Health' },
   { id: 'fitness', label: 'Fitness' },
@@ -44,19 +84,6 @@ const CATEGORIES = [
   { id: 'social', label: 'Social' },
   { id: 'personal', label: 'Personal' },
   { id: 'other', label: 'Other' },
-];
-
-const COLORS = [
-  '#6366f1', // Indigo
-  '#8b5cf6', // Violet
-  '#ec4899', // Pink
-  '#ef4444', // Red
-  '#f97316', // Orange
-  '#f59e0b', // Amber
-  '#10b981', // Emerald
-  '#06b6d4', // Cyan
-  '#3b82f6', // Blue
-  '#64748b', // Slate
 ];
 
 const WEEKDAYS = [
@@ -72,6 +99,7 @@ const WEEKDAYS = [
 export const HabitFormModal = ({ isOpen, onClose, habitToEdit = null, todayDateStr }) => {
   const queryClient = useQueryClient();
   const isEditing = !!habitToEdit;
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const defaultDate = todayDateStr || new Date().toISOString().slice(0, 10);
 
@@ -89,8 +117,8 @@ export const HabitFormModal = ({ isOpen, onClose, habitToEdit = null, todayDateS
       name: '',
       description: '',
       category: 'personal',
-      icon: 'CheckCircle2',
-      color: '#6366f1',
+      icon: 'Yoga',
+      color: '#FF6B4A',
       trackingType: 'binary',
       targetValue: 1,
       targetUnit: 'times',
@@ -100,7 +128,7 @@ export const HabitFormModal = ({ isOpen, onClose, habitToEdit = null, todayDateS
       startDate: defaultDate,
       endDate: '',
       preferredTime: 'anytime',
-      reminderTime: '',
+      reminderTime: '08:00',
       minVersionEnabled: false,
       minVersionDescription: '',
       minVersionTarget: 1,
@@ -108,10 +136,10 @@ export const HabitFormModal = ({ isOpen, onClose, habitToEdit = null, todayDateS
     },
   });
 
+  const selectedIcon = watch('icon');
+  const selectedFrequencyType = watch('frequencyType');
+  const selectedFrequencyDays = watch('frequencyDays');
   const trackingType = watch('trackingType');
-  const frequencyType = watch('frequencyType');
-  const selectedDays = watch('frequencyDays');
-  const selectedColor = watch('color');
   const minVersionEnabled = watch('minVersionEnabled');
 
   useEffect(() => {
@@ -120,21 +148,21 @@ export const HabitFormModal = ({ isOpen, onClose, habitToEdit = null, todayDateS
         name: habitToEdit.name || '',
         description: habitToEdit.description || '',
         category: habitToEdit.category || 'personal',
-        icon: habitToEdit.icon || 'CheckCircle2',
-        color: habitToEdit.color || '#6366f1',
+        icon: habitToEdit.icon || 'Yoga',
+        color: habitToEdit.color || '#FF6B4A',
         trackingType: habitToEdit.trackingType || 'binary',
         targetValue: habitToEdit.target?.value || 1,
         targetUnit: habitToEdit.target?.unit || 'times',
         frequencyType: habitToEdit.frequency?.type || 'everyday',
         frequencyDays: habitToEdit.frequency?.days || [0, 1, 2, 3, 4, 5, 6],
         targetPerWeek: habitToEdit.frequency?.targetPerWeek || 7,
-        startDate: habitToEdit.startDate || defaultDate,
-        endDate: habitToEdit.endDate || '',
+        startDate: habitToEdit.startDate?.slice(0, 10) || defaultDate,
+        endDate: habitToEdit.endDate ? habitToEdit.endDate.slice(0, 10) : '',
         preferredTime: habitToEdit.preferredTime || 'anytime',
         reminderTime: habitToEdit.reminderTime || '',
-        minVersionEnabled: habitToEdit.minimumVersion?.enabled || false,
-        minVersionDescription: habitToEdit.minimumVersion?.description || '',
-        minVersionTarget: habitToEdit.minimumVersion?.targetValue || 1,
+        minVersionEnabled: habitToEdit.minVersion?.enabled || false,
+        minVersionDescription: habitToEdit.minVersion?.description || '',
+        minVersionTarget: habitToEdit.minVersion?.target || 1,
         difficulty: habitToEdit.difficulty || 'medium',
       });
     } else {
@@ -142,8 +170,8 @@ export const HabitFormModal = ({ isOpen, onClose, habitToEdit = null, todayDateS
         name: '',
         description: '',
         category: 'personal',
-        icon: 'CheckCircle2',
-        color: '#6366f1',
+        icon: 'Yoga',
+        color: '#FF6B4A',
         trackingType: 'binary',
         targetValue: 1,
         targetUnit: 'times',
@@ -153,7 +181,7 @@ export const HabitFormModal = ({ isOpen, onClose, habitToEdit = null, todayDateS
         startDate: defaultDate,
         endDate: '',
         preferredTime: 'anytime',
-        reminderTime: '',
+        reminderTime: '08:00',
         minVersionEnabled: false,
         minVersionDescription: '',
         minVersionTarget: 1,
@@ -163,45 +191,58 @@ export const HabitFormModal = ({ isOpen, onClose, habitToEdit = null, todayDateS
   }, [habitToEdit, defaultDate, reset]);
 
   const toggleDay = (dayNum) => {
-    const current = selectedDays || [];
-    let updated;
-    if (current.includes(dayNum)) {
-      if (current.length === 1) return; // Must have at least 1 day
-      updated = current.filter((d) => d !== dayNum);
+    const current = [...selectedFrequencyDays];
+    const idx = current.indexOf(dayNum);
+    if (idx > -1) {
+      if (current.length > 1) {
+        current.splice(idx, 1);
+        setValue('frequencyDays', current);
+      }
     } else {
-      updated = [...current, dayNum];
+      current.push(dayNum);
+      setValue('frequencyDays', current);
     }
-    setValue('frequencyDays', updated);
   };
 
-  const onSubmit = async (data) => {
+  const handleFrequencySelect = (type) => {
+    setValue('frequencyType', type);
+    if (type === 'everyday') {
+      setValue('frequencyDays', [0, 1, 2, 3, 4, 5, 6]);
+    } else if (type === 'weekdays') {
+      setValue('frequencyDays', [1, 2, 3, 4, 5]);
+    } else if (type === 'specific_days') {
+      setValue('frequencyDays', [0, 6]); // weekends as default for custom
+    }
+  };
+
+  const onSubmit = async (values) => {
     try {
       const payload = {
-        name: data.name,
-        description: data.description,
-        category: data.category,
-        icon: data.icon,
-        color: data.color,
-        trackingType: data.trackingType,
+        name: values.name,
+        description: values.description,
+        category: values.category,
+        icon: values.icon,
+        color: values.color,
+        trackingType: values.trackingType,
         target: {
-          value: data.targetValue,
-          unit: data.targetUnit,
+          value: Number(values.targetValue),
+          unit: values.targetUnit,
         },
         frequency: {
-          type: data.frequencyType,
-          days: data.frequencyType === 'everyday' ? [0, 1, 2, 3, 4, 5, 6] : data.frequencyDays,
-          targetPerWeek: data.targetPerWeek,
+          type: values.frequencyType,
+          days: values.frequencyDays,
+          targetPerWeek: Number(values.targetPerWeek),
         },
-        startDate: data.startDate,
-        endDate: data.endDate || null,
-        preferredTime: data.preferredTime,
-        reminderTime: data.reminderTime || null,
-        minimumVersion: {
-          enabled: data.minVersionEnabled,
-          description: data.minVersionDescription || '',
-          targetValue: data.minVersionTarget,
+        startDate: values.startDate,
+        endDate: values.endDate || undefined,
+        preferredTime: values.preferredTime,
+        reminderTime: values.reminderTime || undefined,
+        minVersion: {
+          enabled: values.minVersionEnabled,
+          description: values.minVersionDescription,
+          target: Number(values.minVersionTarget),
         },
-        difficulty: data.difficulty,
+        difficulty: values.difficulty,
       };
 
       if (isEditing) {
@@ -212,7 +253,6 @@ export const HabitFormModal = ({ isOpen, onClose, habitToEdit = null, todayDateS
         toast.success('Habit created successfully');
       }
 
-      // Invalidate queries to fetch fresh database state
       queryClient.invalidateQueries({ queryKey: ['habits'] });
       queryClient.invalidateQueries({ queryKey: ['todayHabits'] });
       queryClient.invalidateQueries({ queryKey: ['todaySummary'] });
@@ -223,107 +263,132 @@ export const HabitFormModal = ({ isOpen, onClose, habitToEdit = null, todayDateS
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? 'Edit Habit' : 'Create New Habit'}
-      description="Define schedules, tracking parameters, and minimum fallback versions."
+      title={isEditing ? 'Edit Habit' : 'New Habit'}
+      description="Design your habit with routines, targets and reminders"
       maxWidth="max-w-xl"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Name & Category */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Input
-            label="Habit Name"
-            placeholder="e.g. Read 20 Pages"
-            error={errors.name?.message}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* 1. Habit Name (Screen 1 Pill Input) */}
+        <div>
+          <label className="block text-sm font-bold text-warm-900 dark:text-warm-100 mb-2">
+            Habit Name
+          </label>
+          <input
             {...register('name')}
+            placeholder="e.g., Morning Meditation"
+            className={cn(
+              'w-full px-5 py-3.5 text-sm rounded-full bg-warm-100 dark:bg-surface-700/60 border border-warm-200/70 dark:border-surface-600 text-warm-900 dark:text-warm-100 placeholder:text-warm-400 focus:outline-none focus:ring-2 focus:ring-coral/25 focus:border-coral transition-all duration-150',
+              errors.name && 'border-red-500 focus:ring-red-500/25'
+            )}
           />
-          <Select label="Category" {...register('category')}>
-            {CATEGORIES.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </Select>
-        </div>
-
-        {/* Description */}
-        <Input
-          label="Description / Purpose (Optional)"
-          placeholder="Why does this habit matter to you?"
-          {...register('description')}
-        />
-
-        {/* Tracking Type & Target */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Select label="Tracking Type" {...register('trackingType')}>
-            <option value="binary">Binary (Done / Not Done)</option>
-            <option value="quantity">Quantity (e.g. 3 Liters)</option>
-            <option value="duration">Duration (e.g. 45 Mins)</option>
-            <option value="target">Target Steps / Pages</option>
-          </Select>
-
-          {trackingType !== 'binary' ? (
-            <>
-              <Input
-                label="Target Amount"
-                type="number"
-                step="any"
-                error={errors.targetValue?.message}
-                {...register('targetValue', { valueAsNumber: true })}
-              />
-              <Input
-                label="Unit"
-                placeholder="liters, mins, pages"
-                {...register('targetUnit')}
-              />
-            </>
-          ) : (
-            <div className="sm:col-span-2 flex items-center pt-6 text-xs text-slate-500 dark:text-text-muted">
-              Simple daily check-off without numerical tracking.
-            </div>
+          {errors.name && (
+            <p className="text-xs text-red-500 mt-1 font-medium px-2">
+              {errors.name.message}
+            </p>
           )}
         </div>
 
-        {/* Frequency & Scheduling */}
-        <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-surface-700">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Select label="Frequency Pattern" {...register('frequencyType')}>
-              <option value="everyday">Every Day</option>
-              <option value="weekdays">Monday to Friday</option>
-              <option value="specific_days">Specific Days of Week</option>
-              <option value="weekly_target">Weekly Target (X days/week)</option>
-            </Select>
+        {/* 2. Choose Icon (Screen 1 4-Column Grid) */}
+        <div>
+          <label className="block text-sm font-bold text-warm-900 dark:text-warm-100 mb-2.5">
+            Choose Icon
+          </label>
+          <div className="grid grid-cols-4 gap-2.5 sm:gap-3">
+            {ICON_CHOICES.map((choice) => {
+              const IconComp = choice.icon;
+              const isSelected = selectedIcon === choice.id;
+              return (
+                <button
+                  type="button"
+                  key={choice.id}
+                  onClick={() => setValue('icon', choice.id)}
+                  className={cn(
+                    'flex flex-col items-center justify-center p-3 rounded-2xl border transition-all duration-150 text-center select-none group',
+                    isSelected
+                      ? 'bg-peach-light/60 dark:bg-coral-950/40 border-coral shadow-xs scale-102 ring-2 ring-coral/20'
+                      : 'bg-white dark:bg-surface-700/50 border-warm-200/70 dark:border-surface-600 hover:border-warm-300 dark:hover:border-surface-500 hover:bg-warm-50 dark:hover:bg-surface-700'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'w-10 h-10 rounded-2xl flex items-center justify-center mb-1.5 transition-transform group-hover:scale-105',
+                      choice.bg
+                    )}
+                  >
+                    <IconComp className="w-5 h-5 stroke-[2.2]" />
+                  </div>
+                  <span
+                    className={cn(
+                      'text-xs font-semibold tracking-tight transition-colors',
+                      isSelected
+                        ? 'text-coral font-bold'
+                        : 'text-warm-700 dark:text-warm-300'
+                    )}
+                  >
+                    {choice.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-            <Select label="Preferred Time of Day" {...register('preferredTime')}>
-              <option value="anytime">Anytime</option>
-              <option value="morning">Morning</option>
-              <option value="afternoon">Afternoon</option>
-              <option value="evening">Evening</option>
-            </Select>
+        {/* 3. Frequency Pills (Screen 1 Segmented Control) */}
+        <div>
+          <label className="block text-sm font-bold text-warm-900 dark:text-warm-100 mb-2.5">
+            Frequency & Schedule
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 bg-warm-100 dark:bg-surface-700/60 rounded-2xl border border-warm-200/60 dark:border-surface-600">
+            {[
+              { id: 'everyday', label: 'Daily' },
+              { id: 'weekdays', label: 'Weekdays' },
+              { id: 'specific_days', label: 'Weekends' },
+              { id: 'weekly_target', label: 'Custom' },
+            ].map((freq) => {
+              const isSelected = selectedFrequencyType === freq.id;
+              return (
+                <button
+                  type="button"
+                  key={freq.id}
+                  onClick={() => handleFrequencySelect(freq.id)}
+                  className={cn(
+                    'py-2.5 px-3 rounded-full text-xs font-bold transition-all duration-150 text-center select-none',
+                    isSelected
+                      ? 'bg-coral text-white shadow-sm shadow-coral/30'
+                      : 'text-warm-600 dark:text-warm-300 hover:text-warm-900 dark:hover:text-warm-100 hover:bg-white/60 dark:hover:bg-surface-600/60'
+                  )}
+                >
+                  {freq.label}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Weekday selector for specific_days */}
-          {frequencyType === 'specific_days' && (
-            <div className="pt-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-text-secondary mb-1.5">
-                Scheduled Days
-              </label>
-              <div className="flex space-x-1.5">
+          {/* Weekday Selector Pills when Specific Days selected */}
+          {(selectedFrequencyType === 'specific_days' || selectedFrequencyType === 'weekly_target') && (
+            <div className="mt-3 p-3.5 bg-warm-50 dark:bg-surface-700/40 rounded-2xl border border-warm-200/60 dark:border-surface-600 space-y-2">
+              <span className="text-xs font-semibold text-warm-600 dark:text-warm-300 block">
+                Active Weekdays:
+              </span>
+              <div className="flex items-center justify-between gap-1">
                 {WEEKDAYS.map((wd) => {
-                  const isSelected = selectedDays?.includes(wd.day);
+                  const isDayActive = selectedFrequencyDays.includes(wd.day);
                   return (
                     <button
-                      key={wd.day}
                       type="button"
+                      key={wd.day}
                       onClick={() => toggleDay(wd.day)}
                       className={cn(
-                        'w-9 h-9 rounded-lg text-xs font-bold transition-all',
-                        isSelected
-                          ? 'bg-indigo-600 text-white shadow-sm'
-                          : 'bg-slate-100 dark:bg-surface-700 text-slate-600 dark:text-text-muted hover:bg-slate-200'
+                        'w-9 h-9 rounded-full text-xs font-bold transition-all duration-150 flex items-center justify-center',
+                        isDayActive
+                          ? 'bg-coral text-white shadow-xs'
+                          : 'bg-warm-100 dark:bg-surface-600 text-warm-500 dark:text-warm-400 hover:bg-warm-200'
                       )}
                     >
                       {wd.label}
@@ -335,85 +400,174 @@ export const HabitFormModal = ({ isOpen, onClose, habitToEdit = null, todayDateS
           )}
         </div>
 
-        {/* Minimum Fallback Version (Section 9) */}
-        <div className="pt-2 border-t border-slate-100 dark:border-surface-700">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <span className="text-xs font-semibold text-slate-900 dark:text-text-primary">
-                Minimum Fallback Version
-              </span>
-              <p className="text-[11px] text-slate-500 dark:text-text-muted">
-                A smaller fallback version (e.g. 5 pushups instead of 50) on busy days.
-              </p>
+        {/* 4. Reminder Time (Screen 1 Pill Input) */}
+        <div>
+          <label className="block text-sm font-bold text-warm-900 dark:text-warm-100 mb-2">
+            Reminder Time
+          </label>
+          <div className="relative flex items-center">
+            <div className="absolute left-4 text-warm-400 dark:text-warm-500 pointer-events-none">
+              <Bell className="w-4 h-4" />
             </div>
             <input
-              type="checkbox"
-              className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-              {...register('minVersionEnabled')}
+              type="time"
+              {...register('reminderTime')}
+              className="w-full pl-11 pr-11 py-3 text-sm rounded-full bg-warm-100 dark:bg-surface-700/60 border border-warm-200/70 dark:border-surface-600 text-warm-900 dark:text-warm-100 focus:outline-none focus:ring-2 focus:ring-coral/25 focus:border-coral transition-all"
             />
+            <div className="absolute right-4 text-warm-400 dark:text-warm-500 pointer-events-none">
+              <Clock className="w-4 h-4" />
+            </div>
           </div>
+        </div>
 
-          {minVersionEnabled && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 p-3 rounded-xl bg-slate-50 dark:bg-surface-700/40 border border-slate-200/80 dark:border-surface-600">
-              <Input
-                label="Fallback Target Value"
-                type="number"
-                step="any"
-                {...register('minVersionTarget', { valueAsNumber: true })}
-              />
-              <Input
-                label="Fallback Description"
-                placeholder="e.g. Read 2 pages"
-                {...register('minVersionDescription')}
-              />
+        {/* 5. Progressive Disclosure: Advanced Settings */}
+        <div className="border-t border-warm-100 dark:border-surface-700/80 pt-3">
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="w-full flex items-center justify-between py-2 text-xs font-bold text-coral hover:text-coral-600 transition-colors"
+          >
+            <span>{showAdvanced ? 'Hide Advanced Options' : 'Show Advanced Options (Target, Category, Minimum Version)'}</span>
+            {showAdvanced ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+          </button>
+
+          {showAdvanced && (
+            <div className="mt-4 space-y-4 animate-slide-down">
+              {/* Category & Preferred Time */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Select
+                  label="Category"
+                  {...register('category')}
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.label}
+                    </option>
+                  ))}
+                </Select>
+
+                <Select
+                  label="Time of Day"
+                  {...register('preferredTime')}
+                >
+                  <option value="anytime">Anytime</option>
+                  <option value="morning">Morning</option>
+                  <option value="afternoon">Afternoon</option>
+                  <option value="evening">Evening</option>
+                </Select>
+              </div>
+
+              {/* Tracking Type & Target */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Select
+                  label="Tracking Type"
+                  {...register('trackingType')}
+                >
+                  <option value="binary">Yes / No (Done)</option>
+                  <option value="quantity">Quantity (e.g., 8 glasses)</option>
+                  <option value="duration">Duration (e.g., 30 mins)</option>
+                </Select>
+
+                <Input
+                  label="Target Value"
+                  type="number"
+                  step="any"
+                  {...register('targetValue', { valueAsNumber: true })}
+                />
+
+                <Input
+                  label="Unit"
+                  placeholder="e.g. times, mins, pages"
+                  {...register('targetUnit')}
+                />
+              </div>
+
+              {/* Minimum Version Strategy (Two-Minute Rule) */}
+              <div className="p-4 rounded-2xl bg-peach-light/40 dark:bg-surface-700/40 border border-coral/15 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-warm-900 dark:text-warm-100 block">
+                      Minimum Version (Never Miss Twice)
+                    </span>
+                    <span className="text-[11px] text-warm-500 dark:text-warm-400">
+                      Fallback goal when busy or exhausted
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    {...register('minVersionEnabled')}
+                    className="w-5 h-5 accent-coral rounded-md cursor-pointer"
+                  />
+                </div>
+
+                {minVersionEnabled && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <Input
+                      label="Emergency Minimum Target"
+                      type="number"
+                      step="any"
+                      {...register('minVersionTarget', { valueAsNumber: true })}
+                    />
+                    <Input
+                      label="Minimum Description"
+                      placeholder="e.g. Read 2 pages instead of 30"
+                      {...register('minVersionDescription')}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Start Date */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Input
+                  label="Start Date"
+                  type="date"
+                  {...register('startDate')}
+                />
+                <Select
+                  label="Difficulty"
+                  {...register('difficulty')}
+                >
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </Select>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-xs font-semibold text-warm-800 dark:text-warm-200 mb-1.5">
+                  Habit Description / Motivation
+                </label>
+                <textarea
+                  {...register('description')}
+                  rows={2}
+                  placeholder="Why this habit matters to your wellness..."
+                  className="w-full px-4 py-2.5 text-sm rounded-2xl bg-warm-100 dark:bg-surface-700/60 border border-warm-200/70 dark:border-surface-600 text-warm-900 dark:text-warm-100 focus:outline-none focus:ring-2 focus:ring-coral/25 focus:border-coral transition-all"
+                />
+              </div>
             </div>
           )}
         </div>
 
-        {/* Start Date & Difficulty */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-surface-700">
-          <Input
-            label="Start Date"
-            type="date"
-            error={errors.startDate?.message}
-            {...register('startDate')}
-          />
-          <Select label="Difficulty" {...register('difficulty')}>
-            <option value="easy">Easy (Low friction)</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard (High effort)</option>
-          </Select>
-        </div>
-
-        {/* Color Palette Picker */}
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-text-secondary mb-1.5">
-            Accent Color
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {COLORS.map((hex) => (
-              <button
-                key={hex}
-                type="button"
-                onClick={() => setValue('color', hex)}
-                className={cn(
-                  'w-7 h-7 rounded-full transition-transform',
-                  selectedColor === hex
-                    ? 'ring-2 ring-offset-2 ring-indigo-500 scale-110'
-                    : 'hover:scale-105'
-                )}
-                style={{ backgroundColor: hex }}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100 dark:border-surface-700">
-          <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
+        {/* Footer Actions */}
+        <div className="flex items-center justify-end space-x-3 pt-3 border-t border-warm-100 dark:border-surface-700/80">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+          >
             Cancel
           </Button>
-          <Button type="submit" isLoading={isSubmitting}>
+          <Button
+            type="submit"
+            isLoading={isSubmitting}
+            className="px-7"
+          >
             {isEditing ? 'Save Changes' : 'Create Habit'}
           </Button>
         </div>

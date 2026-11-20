@@ -142,34 +142,34 @@ export const GoalsPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-text-primary">
+          <h1 className="text-2xl font-extrabold tracking-tight text-warm-900 dark:text-warm-100">
             Goals & Milestones
           </h1>
-          <p className="text-xs text-slate-500 dark:text-text-muted mt-1">
+          <p className="text-xs text-warm-500 dark:text-warm-400 mt-1">
             Set ambitious targets linked directly to daily habit routines or independent milestones.
           </p>
         </div>
-        <Button onClick={openCreateModal}>
-          <Plus className="w-4 h-4 mr-2" />
+        <Button onClick={openCreateModal} className="shadow-xs shadow-coral/30">
+          <Plus className="w-4 h-4 mr-1.5 stroke-[2.5]" />
           Create Goal
         </Button>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center space-x-1 bg-white dark:bg-surface-800 border border-slate-200 dark:border-surface-700 rounded-xl p-1 w-fit shadow-sm">
+      <div className="flex items-center space-x-1 bg-white dark:bg-surface-800 border border-warm-200/80 dark:border-surface-700 rounded-full p-1 w-fit shadow-xs">
         {['active', 'completed', 'all'].map((status) => (
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
             className={cn(
-              'px-3.5 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors',
+              'px-4 py-1.5 rounded-full text-xs font-bold capitalize transition-all duration-150',
               statusFilter === status
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-600 dark:text-text-secondary hover:bg-slate-100 dark:hover:bg-surface-700'
+                ? 'bg-coral text-white shadow-xs'
+                : 'text-warm-600 dark:text-warm-300 hover:text-warm-900 dark:hover:text-warm-100 hover:bg-warm-100 dark:hover:bg-surface-700'
             )}
           >
             {status}
@@ -179,7 +179,7 @@ export const GoalsPage = () => {
 
       {/* Goals Grid */}
       {isLoading ? (
-        <div className="p-12 text-center text-xs text-slate-400 animate-pulse">
+        <div className="p-12 text-center text-xs text-warm-400 animate-pulse">
           Loading goals...
         </div>
       ) : goals.length === 0 ? (
@@ -191,7 +191,7 @@ export const GoalsPage = () => {
           onAction={openCreateModal}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {goals.map((goal) => {
             const percentage = Math.min(
               100,
@@ -200,12 +200,15 @@ export const GoalsPage = () => {
             const isCompleted = goal.status === 'completed' || percentage >= 100;
 
             return (
-              <Card key={goal._id} className="flex flex-col justify-between hover:shadow-md transition-shadow">
+              <Card
+                key={goal._id}
+                className="flex flex-col justify-between hover:shadow-md transition-shadow rounded-[24px] p-5"
+              >
                 <div>
                   {/* Status & Habit badge */}
                   <div className="flex items-center justify-between">
                     {goal.habitId ? (
-                      <Badge variant="purple" className="text-[10px]">
+                      <Badge variant="peach" className="text-[10px]">
                         Linked: {goal.habitId.name || 'Habit'}
                       </Badge>
                     ) : (
@@ -220,12 +223,12 @@ export const GoalsPage = () => {
                   </div>
 
                   {/* Title and Description */}
-                  <div className="mt-3">
-                    <h3 className="text-base font-semibold text-slate-900 dark:text-text-primary">
+                  <div className="mt-3.5">
+                    <h3 className="text-base font-bold text-warm-900 dark:text-warm-100">
                       {goal.title}
                     </h3>
                     {goal.description && (
-                      <p className="text-xs text-slate-500 dark:text-text-muted mt-1 line-clamp-2">
+                      <p className="text-xs text-warm-500 dark:text-warm-400 mt-1 line-clamp-2 leading-relaxed">
                         {goal.description}
                       </p>
                     )}
@@ -233,29 +236,29 @@ export const GoalsPage = () => {
 
                   {/* Progress Bar & Numerical Target */}
                   <div className="mt-4 space-y-1.5">
-                    <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-slate-600 dark:text-text-secondary">
+                    <div className="flex justify-between text-xs font-bold">
+                      <span className="text-warm-700 dark:text-warm-300">
                         {goal.progress || 0} / {goal.target} {goal.unit}
                       </span>
-                      <span className="text-indigo-600 dark:text-indigo-400 font-bold">
+                      <span className="text-coral font-extrabold">
                         {percentage}%
                       </span>
                     </div>
                     <ProgressBar
                       value={percentage}
-                      barClassName={isCompleted ? 'bg-emerald-500' : 'bg-indigo-600'}
+                      barClassName={isCompleted ? 'bg-emerald-500' : 'bg-coral'}
                     />
                   </div>
 
                   {/* Deadline info */}
-                  <div className="flex items-center space-x-1.5 text-[11px] text-slate-400 dark:text-text-dim mt-3">
-                    <Clock className="w-3.5 h-3.5" />
+                  <div className="flex items-center space-x-1.5 text-xs text-warm-400 mt-3.5">
+                    <Clock className="w-3.5 h-3.5 text-coral" />
                     <span>Deadline: {goal.deadline}</span>
                   </div>
                 </div>
 
                 {/* Bottom Actions */}
-                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-surface-700/60 flex items-center justify-between">
+                <div className="mt-5 pt-3.5 border-t border-warm-100 dark:border-surface-700/60 flex items-center justify-between">
                   <Button
                     variant="secondary"
                     size="xs"
@@ -273,14 +276,14 @@ export const GoalsPage = () => {
                   <div className="flex items-center space-x-1">
                     <button
                       onClick={() => openEditModal(goal)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-text-primary hover:bg-slate-100 dark:hover:bg-surface-700"
+                      className="p-1.5 rounded-full text-warm-400 hover:text-warm-700 dark:hover:text-warm-200 hover:bg-warm-100 dark:hover:bg-surface-700 transition-colors"
                       title="Edit Goal"
                     >
                       <Edit className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDeleteGoal(goal._id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                      className="p-1.5 rounded-full text-warm-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
                       title="Delete Goal"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -300,7 +303,7 @@ export const GoalsPage = () => {
         title={goalToEdit ? 'Edit Goal' : 'Create Goal'}
         description="Define target parameters, milestone metrics, and deadlines."
       >
-        <form onSubmit={handleSaveGoal} className="space-y-3.5">
+        <form onSubmit={handleSaveGoal} className="space-y-4">
           <Input
             label="Goal Title"
             value={title}
@@ -342,7 +345,7 @@ export const GoalsPage = () => {
               label="Unit"
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
-              placeholder="pages, sessions, km"
+              placeholder="e.g. books, km, hrs"
               required
             />
           </div>
@@ -356,7 +359,7 @@ export const GoalsPage = () => {
               required
             />
             <Input
-              label="Target Deadline"
+              label="Deadline"
               type="date"
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
@@ -364,8 +367,8 @@ export const GoalsPage = () => {
             />
           </div>
 
-          <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100 dark:border-surface-700">
-            <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
+          <div className="flex justify-end space-x-2 pt-3">
+            <Button variant="ghost" type="button" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
             <Button type="submit">
@@ -379,13 +382,13 @@ export const GoalsPage = () => {
       <Modal
         isOpen={progressModal.isOpen}
         onClose={() => setProgressModal({ isOpen: false, goal: null, amount: 1 })}
-        title={`Update Progress: ${progressModal.goal?.title || ''}`}
-        description="Add newly accomplished increments towards this goal."
+        title={`Increment: ${progressModal.goal?.title || ''}`}
+        description="Add progress towards your milestone"
         maxWidth="max-w-sm"
       >
         <div className="space-y-4">
           <Input
-            label={`Amount to Add (${progressModal.goal?.unit || 'units'})`}
+            label={`Amount to add (${progressModal.goal?.unit || 'units'})`}
             type="number"
             step="any"
             value={progressModal.amount}
@@ -393,20 +396,7 @@ export const GoalsPage = () => {
               setProgressModal((s) => ({ ...s, amount: e.target.value }))
             }
           />
-          <div className="flex space-x-2">
-            {[1, 5, 10].map((inc) => (
-              <Button
-                key={inc}
-                variant="outline"
-                size="xs"
-                className="flex-1"
-                onClick={() => setProgressModal((s) => ({ ...s, amount: inc }))}
-              >
-                +{inc}
-              </Button>
-            ))}
-          </div>
-          <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100 dark:border-surface-700">
+          <div className="flex justify-end space-x-2 pt-2">
             <Button
               variant="ghost"
               onClick={() =>
@@ -415,7 +405,9 @@ export const GoalsPage = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleProgressUpdate}>Update Progress</Button>
+            <Button onClick={handleProgressUpdate}>
+              Add Progress
+            </Button>
           </div>
         </div>
       </Modal>

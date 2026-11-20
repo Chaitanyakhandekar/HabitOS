@@ -12,17 +12,31 @@ import {
   AlertCircle,
   Calendar,
   Check,
+  Heart,
+  Music,
+  BookOpen,
+  Footprints,
+  Moon,
+  Palette,
+  Bike,
+  LayoutGrid,
+  Droplets,
+  Dumbbell,
+  Code2,
+  Coffee,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle } from '../components/ui/Card.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Badge } from '../components/ui/Badge.jsx';
-import { ProgressBar } from '../components/ui/ProgressBar.jsx';
+import { CircularProgress } from '../components/ui/CircularProgress.jsx';
 import { EmptyState } from '../components/ui/EmptyState.jsx';
 import HabitFormModal from '../components/habits/HabitFormModal.jsx';
 import HabitLogModal from '../components/habits/HabitLogModal.jsx';
 import habitsApi from '../services/habits.api.js';
 import analyticsApi from '../services/analytics.api.js';
+import goalsApi from '../services/goals.api.js';
 import logsApi from '../services/logs.api.js';
 import { useAuthStore } from '../store/authStore.js';
 import toast from 'react-hot-toast';
@@ -35,6 +49,25 @@ import {
   Tooltip,
 } from 'recharts';
 import { cn } from '../utils/cn.js';
+
+// Habit icon resolver
+const getHabitIcon = (iconName) => {
+  const map = {
+    Yoga: { icon: Heart, bg: 'bg-[#FFF0E8] text-[#FF6B4A]' },
+    Singing: { icon: Music, bg: 'bg-[#F2EEFF] text-[#8B5CF6]' },
+    Reading: { icon: BookOpen, bg: 'bg-[#EBF8F2] text-[#10B981]' },
+    Running: { icon: Footprints, bg: 'bg-[#FFF7E6] text-[#F59E0B]' },
+    Sleeping: { icon: Moon, bg: 'bg-[#EEF4FF] text-[#3B82F6]' },
+    Drawing: { icon: Palette, bg: 'bg-[#FFF0F4] text-[#EC4899]' },
+    Cycling: { icon: Bike, bg: 'bg-[#E6FAF7] text-[#06B6D4]' },
+    Water: { icon: Droplets, bg: 'bg-[#E8F2FF] text-[#0284C7]' },
+    Gym: { icon: Dumbbell, bg: 'bg-[#FFF0EB] text-[#EA580C]' },
+    Code: { icon: Code2, bg: 'bg-[#F3EFFC] text-[#7C3AED]' },
+    Coffee: { icon: Coffee, bg: 'bg-[#FFF8E7] text-[#D97706]' },
+    CheckCircle2: { icon: CheckCircle2, bg: 'bg-peach-light text-coral' },
+  };
+  return map[iconName] || { icon: Heart, bg: 'bg-[#FFF0E8] text-[#FF6B4A]' };
+};
 
 export const DashboardPage = () => {
   const { user } = useAuthStore();
@@ -65,7 +98,13 @@ export const DashboardPage = () => {
     queryFn: () => analyticsApi.getOverview({ period: '30d' }),
   });
 
-  // 4. Fetch Genuine Insights
+  // 4. Fetch Goals for deadline card
+  const { data: goalsData } = useQuery({
+    queryKey: ['goals', 'active'],
+    queryFn: () => goalsApi.getAll({ status: 'active' }),
+  });
+
+  // 5. Fetch Genuine Insights
   const { data: insightsData } = useQuery({
     queryKey: ['analytics', 'insights'],
     queryFn: () => analyticsApi.getInsights(),
@@ -83,26 +122,18 @@ export const DashboardPage = () => {
     consistencyScore: 0,
     activeHabitsCount: 0,
   };
+  const activeGoals = goalsData?.data?.goals || [];
+  const nearestGoal = activeGoals[0];
   const weekdayPerformance = analyticsData?.data?.weekdayPerformance || [];
   const insights = insightsData?.data?.insights || [];
-  const todayDateStr = todayData?.data?.date;
-
-  // Time-of-day greeting
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  };
+  const todayDateStr = todayData?.data?.date || new Date().toISOString().slice(0, 10);
 
   // Quick 1-click completion toggle mutation
   const toggleMutation = useMutation({
     mutationFn: async ({ habit, isCompleted, existingLog }) => {
       if (isCompleted && existingLog) {
-        // Undo
         await logsApi.delete(existingLog._id);
       } else {
-        // Complete full
         await logsApi.log({
           habitId: habit._id,
           localDate: todayDateStr,
@@ -122,343 +153,360 @@ export const DashboardPage = () => {
     },
   });
 
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date());
+
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Reference Screen 2 Header (Date & Title & Action) */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-text-primary">
-            {getGreeting()}, {user?.name?.split(' ')[0] || 'User'}
+          <span className="text-xs font-semibold text-warm-500 dark:text-warm-400">
+            {formattedDate}
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-warm-900 dark:text-warm-100">
+            Today&apos;s Habits
           </h1>
-          <p className="text-xs text-slate-500 dark:text-text-muted mt-1">
-            {new Date().toLocaleDateString('en-US', {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-            })}{' '}
-            &bull; Ready to build consistency today?
-          </p>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Habit
+        <Button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="shadow-sm shadow-coral/30"
+        >
+          <Plus className="w-4 h-4 mr-1.5 stroke-[2.5]" />
+          New Habit
         </Button>
       </div>
 
-      {/* Summary KPI Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Today's Progress */}
-        <Card>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-text-muted">
-              Today&apos;s Progress
+      {/* Reference Screen 2: Daily Progress Hero Card */}
+      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-7 bg-gradient-to-br from-[#FFF0E8] via-[#FFF5F0] to-[#FFF8F5] dark:from-[#312019] dark:via-[#261A16] dark:to-[#1E1715] border border-coral/25 shadow-[0_8px_30px_rgb(255,107,74,0.08)]">
+        <div className="flex items-center justify-between">
+          {/* Left stats */}
+          <div className="space-y-2 max-w-[65%]">
+            <span className="text-xs font-bold uppercase tracking-wider text-warm-500 dark:text-warm-400">
+              Daily Progress
             </span>
-            <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
-              <CheckCircle2 className="w-4 h-4" />
+            <div className="text-3xl sm:text-4xl font-extrabold text-warm-900 dark:text-warm-100 tracking-tight">
+              {summary.completed}/{summary.totalScheduled}{' '}
+              <span className="text-base sm:text-lg font-medium text-warm-500 dark:text-warm-400">
+                completed
+              </span>
+            </div>
+            <div className="flex items-center space-x-1.5 pt-1 text-xs font-semibold text-warm-600 dark:text-warm-300">
+              <Flame className="w-4 h-4 text-coral fill-coral" />
+              <span>
+                Best streak:{' '}
+                <strong className="text-warm-900 dark:text-warm-100 font-bold">
+                  {metrics.longestStreak || 0} days
+                </strong>
+              </span>
             </div>
           </div>
-          <div className="mt-3">
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-text-primary">
-              {summary.completed}/{summary.totalScheduled}
-            </div>
-            <div className="mt-2">
-              <ProgressBar value={summary.completionRate} size="sm" />
-            </div>
-          </div>
-          <p className="text-[11px] text-slate-400 dark:text-text-dim mt-2">
-            {summary.completionRate}% of today&apos;s scheduled targets
-          </p>
-        </Card>
 
-        {/* Current Streak */}
-        <Card>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-text-muted">
-              Current Streak
-            </span>
-            <div className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-500">
-              <Flame className="w-4 h-4" />
-            </div>
+          {/* Right: Circular Progress Ring */}
+          <div className="flex-shrink-0">
+            <CircularProgress
+              value={summary.completed}
+              max={summary.totalScheduled || 1}
+              size={92}
+              strokeWidth={8}
+              trackColor="stroke-[#FDD8CC] dark:stroke-[#4A2D23]"
+              progressColor="stroke-coral"
+              labelClassName="text-lg font-extrabold text-warm-900 dark:text-warm-100"
+            />
           </div>
-          <div className="mt-3">
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-text-primary">
-              {metrics.currentStreak} <span className="text-xs font-medium text-slate-400">days</span>
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-text-muted mt-2">
-              Personal best: <span className="font-semibold text-slate-700 dark:text-text-secondary">{metrics.longestStreak} days</span>
-            </p>
-          </div>
-        </Card>
-
-        {/* 30-Day Consistency */}
-        <Card>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-text-muted">
-              30-Day Consistency
-            </span>
-            <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-500">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-text-primary">
-              {metrics.consistencyScore}%
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-text-muted mt-2">
-              Weighted scheduled adherence
-            </p>
-          </div>
-        </Card>
-
-        {/* Active Habits */}
-        <Card>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-text-muted">
-              Active Habits
-            </span>
-            <div className="p-1.5 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-500">
-              <Award className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-text-primary">
-              {metrics.activeHabitsCount}
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-text-muted mt-2">
-              Habits currently in active rotation
-            </p>
-          </div>
-        </Card>
+        </div>
       </div>
 
-      {/* Main Two-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Today's Habits Checklist (2 Columns) */}
-        <div className="lg:col-span-2 space-y-4">
-          <Card>
-            <CardHeader className="mb-0">
-              <div>
-                <CardTitle>Today&apos;s Scheduled Habits</CardTitle>
-                <p className="text-xs text-slate-500 dark:text-text-muted mt-0.5">
-                  Check off items or click to record partial/minimum versions.
-                </p>
-              </div>
-              <Link
-                to="/today"
-                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center"
-              >
-                Full view
-                <ArrowRight className="w-3.5 h-3.5 ml-1" />
-              </Link>
-            </CardHeader>
+      {/* Reference Screen 2: Secondary Supporting Cards (2-Columns) */}
+      <div className="grid grid-cols-2 gap-3.5 sm:gap-4">
+        {/* Card 1: Deadline / Goals */}
+        <Link
+          to="/goals"
+          className="p-4 sm:p-5 rounded-[22px] bg-white dark:bg-surface-800 border border-warm-200/70 dark:border-surface-700/60 shadow-[0_4px_20px_-2px_rgba(40,25,20,0.03)] hover:border-coral/40 transition-all group"
+        >
+          <div className="flex items-center justify-between text-xs font-bold text-warm-400 dark:text-warm-500 mb-2">
+            <span>Next Goal</span>
+            <Calendar className="w-4 h-4 text-coral" />
+          </div>
+          <div className="font-bold text-sm sm:text-base text-warm-900 dark:text-warm-100 truncate">
+            {nearestGoal ? nearestGoal.title : 'Stay consistent'}
+          </div>
+          <span className="text-[11px] font-semibold text-coral block mt-1">
+            {nearestGoal?.targetDate
+              ? new Date(nearestGoal.targetDate).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                })
+              : `${metrics.consistencyScore || 0}% consistency`}
+          </span>
+        </Link>
 
-            <div className="divide-y divide-slate-100 dark:divide-surface-700/60 mt-2">
-              {isLoadingToday ? (
-                <div className="p-6 text-center text-xs text-slate-400 animate-pulse">
-                  Loading today&apos;s habits...
-                </div>
-              ) : habitsList.length === 0 ? (
-                <EmptyState
-                  icon={CheckCircle2}
-                  title="No habits scheduled for today"
-                  description="Enjoy your rest day or create a new habit to begin tracking."
-                  actionLabel="Add Habit"
-                  onAction={() => setIsCreateModalOpen(true)}
-                />
-              ) : (
-                habitsList.map(({ habit, log, isCompleted, isPartial, isSkipped, currentStreak }) => (
+        {/* Card 2: Current Streak & Consistency */}
+        <Link
+          to="/analytics"
+          className="p-4 sm:p-5 rounded-[22px] bg-white dark:bg-surface-800 border border-warm-200/70 dark:border-surface-700/60 shadow-[0_4px_20px_-2px_rgba(40,25,20,0.03)] hover:border-coral/40 transition-all group"
+        >
+          <div className="flex items-center justify-between text-xs font-bold text-warm-400 dark:text-warm-500 mb-2">
+            <span>Active Streak</span>
+            <Flame className="w-4 h-4 text-amber-500" />
+          </div>
+          <div className="font-bold text-sm sm:text-base text-warm-900 dark:text-warm-100">
+            {metrics.currentStreak} Days
+          </div>
+          <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 block mt-1">
+            {metrics.activeHabitsCount || habitsList.length} Active Habits
+          </span>
+        </Link>
+      </div>
+
+      {/* Reference Screen 2: Habit List */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-base font-bold text-warm-900 dark:text-warm-100">
+            Today&apos;s Checklist
+          </h2>
+          <span className="text-xs text-warm-500 font-semibold">
+            {summary.completed}/{summary.totalScheduled} Done
+          </span>
+        </div>
+
+        {isLoadingToday ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-20 bg-warm-100 dark:bg-surface-700/60 rounded-2xl animate-pulse"
+              />
+            ))}
+          </div>
+        ) : habitsList.length === 0 ? (
+          <Card className="text-center py-10">
+            <EmptyState
+              title="No habits scheduled for today"
+              description="Take a well-deserved rest day or create a new habit to start building positive routines."
+              actionLabel="Create Habit"
+              onAction={() => setIsCreateModalOpen(true)}
+            />
+          </Card>
+        ) : (
+          <div className="space-y-2.5">
+            {habitsList.map(({ habit, isCompleted, existingLog }) => {
+              const iconData = getHabitIcon(habit.icon);
+              const IconComp = iconData.icon;
+              const isNumeric = habit.trackingType !== 'binary';
+
+              return (
+                <div
+                  key={habit._id}
+                  className={cn(
+                    'p-4 rounded-[22px] bg-white dark:bg-surface-800 border transition-all duration-200 flex items-center justify-between shadow-[0_2px_12px_rgba(40,25,20,0.03)]',
+                    isCompleted
+                      ? 'border-coral/25 bg-peach-light/20 dark:bg-surface-800/90'
+                      : 'border-warm-200/70 dark:border-surface-700/60 hover:border-warm-300'
+                  )}
+                >
+                  {/* Left: Squircle Icon + Habit Name + Streak */}
                   <div
-                    key={habit._id}
-                    className="py-3 px-2 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-surface-700/30 rounded-xl transition-colors group"
+                    className="flex items-center space-x-3.5 min-w-0 flex-1 cursor-pointer"
+                    onClick={() =>
+                      setLogModalState({
+                        isOpen: true,
+                        habit,
+                        log: existingLog,
+                      })
+                    }
                   >
-                    <div className="flex items-center space-x-3 min-w-0">
-                      {/* Checkbox Button */}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          toggleMutation.mutate({
-                            habit,
-                            isCompleted,
-                            existingLog: log,
-                          })
-                        }
-                        className={cn(
-                          'w-6 h-6 rounded-lg flex items-center justify-center border transition-all duration-200',
-                          isCompleted
-                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm'
-                            : 'border-slate-300 dark:border-surface-600 hover:border-indigo-500 bg-white dark:bg-surface-800'
-                        )}
-                      >
-                        {isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                      </button>
+                    <div
+                      className={cn(
+                        'w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105',
+                        iconData.bg
+                      )}
+                    >
+                      <IconComp className="w-5 h-5 stroke-[2.2]" />
+                    </div>
 
-                      {/* Habit Name and Meta */}
-                      <div className="min-w-0">
-                        <div className="flex items-center space-x-2">
-                          <span
-                            className={cn(
-                              'text-sm font-medium tracking-tight truncate',
-                              isCompleted
-                                ? 'line-through text-slate-400 dark:text-text-dim'
-                                : 'text-slate-900 dark:text-text-primary'
-                            )}
-                          >
-                            {habit.name}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center space-x-2">
+                        <h3
+                          className={cn(
+                            'text-sm font-bold truncate transition-colors',
+                            isCompleted
+                              ? 'text-warm-900 dark:text-warm-100 line-through opacity-80'
+                              : 'text-warm-900 dark:text-warm-100'
+                          )}
+                        >
+                          {habit.name}
+                        </h3>
+                      </div>
+
+                      <div className="flex items-center space-x-2 mt-0.5">
+                        <div className="flex items-center space-x-1 text-xs text-warm-500 font-semibold">
+                          <Flame className="w-3.5 h-3.5 text-coral fill-coral" />
+                          <span>{habit.currentStreak || 0} days</span>
+                        </div>
+                        {isNumeric && (
+                          <span className="text-[11px] text-warm-400">
+                            &bull; Target: {habit.target?.value} {habit.target?.unit}
                           </span>
-                          <span
-                            className="w-2 h-2 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: habit.color || '#6366f1' }}
-                          />
-                        </div>
-                        <div className="flex items-center space-x-2 mt-0.5">
-                          <Badge variant="default" className="text-[10px] py-0 px-1.5 uppercase font-mono">
-                            {habit.category}
-                          </Badge>
-                          {habit.trackingType !== 'binary' && (
-                            <span className="text-[11px] text-slate-500 dark:text-text-muted">
-                              Target: {habit.target.value} {habit.target.unit}
-                            </span>
-                          )}
-                          {currentStreak > 0 && (
-                            <span className="text-[11px] font-medium text-amber-500 flex items-center">
-                              <Flame className="w-3 h-3 mr-0.5" />
-                              {currentStreak}d
-                            </span>
-                          )}
-                        </div>
+                        )}
                       </div>
                     </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center space-x-2">
-                      {isPartial && (
-                        <Badge variant="warning" className="text-[10px]">
-                          Partial
-                        </Badge>
-                      )}
-                      {isSkipped && (
-                        <Badge variant="danger" className="text-[10px]">
-                          Skipped
-                        </Badge>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() =>
-                          setLogModalState({
-                            isOpen: true,
-                            habit,
-                            log,
-                          })
-                        }
-                      >
-                        Log
-                      </Button>
-                    </div>
                   </div>
-                ))
-              )}
-            </div>
-          </Card>
 
-          {/* Weekly Performance Recharts Bar Chart */}
-          <Card>
-            <CardHeader>
-              <div>
-                <CardTitle>Weekly Day-by-Day Adherence</CardTitle>
-                <p className="text-xs text-slate-500 dark:text-text-muted mt-0.5">
-                  Percentage of scheduled habits completed across each day of the week.
-                </p>
-              </div>
-            </CardHeader>
-            <div className="h-48 w-full mt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weekdayPerformance} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={11} unit="%" domain={[0, 100]} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1e2133',
-                      borderColor: '#252840',
-                      borderRadius: '8px',
-                      color: '#f1f2f7',
-                      fontSize: '12px',
-                    }}
-                    formatter={(val) => [`${val}%`, 'Adherence']}
-                  />
-                  <Bar dataKey="rate" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </div>
-
-        {/* Insights & Quick Actions Column (1 Column) */}
-        <div className="space-y-4">
-          {/* Insights Summary Card */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-indigo-500" />
-                <CardTitle>Behavioral Insights</CardTitle>
-              </div>
-            </CardHeader>
-
-            <div className="space-y-3">
-              {insights.length === 0 ? (
-                <div className="p-4 text-center text-xs text-slate-400 dark:text-text-muted">
-                  Log a few more days of habits to generate genuine analytical patterns.
+                  {/* Right: Circular Completion Indicator */}
+                  <div className="flex items-center space-x-2 flex-shrink-0 ml-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        toggleMutation.mutate({
+                          habit,
+                          isCompleted,
+                          existingLog,
+                        })
+                      }
+                      className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer',
+                        isCompleted
+                          ? 'bg-coral text-white shadow-xs shadow-coral/30'
+                          : 'border-2 border-warm-300 dark:border-surface-600 hover:border-coral bg-white dark:bg-surface-700'
+                      )}
+                      title={isCompleted ? 'Mark incomplete' : 'Complete habit'}
+                      aria-label={`Toggle habit ${habit.name}`}
+                    >
+                      {isCompleted && <Check className="w-4 h-4 stroke-[3]" />}
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                insights.map((ins) => (
-                  <div
-                    key={ins.id}
-                    className={cn(
-                      'p-3 rounded-xl border text-xs',
-                      ins.variant === 'positive'
-                        ? 'bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/50 text-emerald-900 dark:text-emerald-200'
-                        : ins.variant === 'warning'
-                        ? 'bg-amber-50/60 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/50 text-amber-900 dark:text-amber-200'
-                        : 'bg-indigo-50/60 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800/50 text-indigo-900 dark:text-indigo-200'
-                    )}
-                  >
-                    <div className="font-semibold">{ins.title}</div>
-                    <p className="mt-1 opacity-90 leading-relaxed">{ins.description}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </Card>
-
-          {/* Quick Navigation Cards */}
-          <Card className="bg-gradient-to-br from-indigo-900 to-slate-900 text-white border-indigo-800/50 shadow-md">
-            <h4 className="font-bold text-sm tracking-tight">Today&apos;s Daily Reflection</h4>
-            <p className="text-xs text-indigo-200/80 mt-1">
-              Capture your wins, energy levels, and challenges for today.
-            </p>
-            <Link to="/journal">
-              <Button size="sm" className="mt-4 bg-white text-indigo-900 hover:bg-indigo-50 shadow-none font-semibold">
-                Open Journal
-              </Button>
-            </Link>
-          </Card>
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Modals */}
-      <HabitFormModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        todayDateStr={todayDateStr}
-      />
+      {/* Weekly Adherence Chart (Reference-Styled Analytics Section) */}
+      <Card className="rounded-[26px]">
+        <CardHeader>
+          <div>
+            <CardTitle>Weekly Performance</CardTitle>
+            <p className="text-xs text-warm-500 dark:text-warm-400 mt-0.5">
+              Completion distribution by day of week
+            </p>
+          </div>
+          <Link
+            to="/analytics"
+            className="text-xs font-bold text-coral hover:text-coral-600 inline-flex items-center"
+          >
+            Detailed Analytics <ArrowRight className="w-3.5 h-3.5 ml-1" />
+          </Link>
+        </CardHeader>
 
-      <HabitLogModal
-        isOpen={logModalState.isOpen}
-        onClose={() => setLogModalState({ isOpen: false, habit: null, log: null })}
-        habit={logModalState.habit}
-        existingLog={logModalState.log}
-        localDate={todayDateStr}
-      />
+        <div className="h-48 w-full mt-2">
+          {weekdayPerformance.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={weekdayPerformance}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
+                <XAxis
+                  dataKey="day"
+                  stroke="#A8A29E"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="#A8A29E"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                  unit="%"
+                />
+                <Tooltip
+                  cursor={{ fill: 'rgba(255, 107, 74, 0.08)' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white dark:bg-surface-800 p-2.5 rounded-xl border border-warm-200 dark:border-surface-600 shadow-md text-xs">
+                          <p className="font-bold text-warm-900 dark:text-warm-100">
+                            {payload[0].payload.day}
+                          </p>
+                          <p className="text-coral font-semibold">
+                            {payload[0].value}% completion
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar
+                  dataKey="rate"
+                  fill="#FF6B4A"
+                  radius={[8, 8, 8, 8]}
+                  maxBarSize={28}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full flex items-center justify-center text-xs text-warm-400">
+              Not enough logs to compute weekday patterns yet.
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Behavioral Insights Section */}
+      {insights.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-base font-bold text-warm-900 dark:text-warm-100 px-1">
+            Behavioral Insights
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {insights.slice(0, 2).map((item, idx) => (
+              <div
+                key={idx}
+                className="p-4 rounded-2xl bg-white dark:bg-surface-800 border border-warm-200/70 dark:border-surface-700/60 shadow-xs flex items-start space-x-3"
+              >
+                <div className="w-8 h-8 rounded-xl bg-peach-light dark:bg-surface-700 text-coral flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-xs font-bold text-warm-900 dark:text-warm-100">
+                    {item.title}
+                  </h4>
+                  <p className="text-xs text-warm-500 dark:text-warm-400 mt-1 leading-relaxed">
+                    {item.message}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Modals */}
+      {isCreateModalOpen && (
+        <HabitFormModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          todayDateStr={todayDateStr}
+        />
+      )}
+
+      {logModalState.isOpen && (
+        <HabitLogModal
+          isOpen={logModalState.isOpen}
+          onClose={() =>
+            setLogModalState({ isOpen: false, habit: null, log: null })
+          }
+          habit={logModalState.habit}
+          existingLog={logModalState.log}
+          localDate={todayDateStr}
+        />
+      )}
     </div>
   );
 };

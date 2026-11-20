@@ -6,24 +6,24 @@ export const Select = React.forwardRef(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-text-secondary mb-1.5">
+          <label className="block text-xs font-semibold text-warm-800 dark:text-warm-200 mb-1.5">
             {label}
           </label>
         )}
         <select
           ref={ref}
           className={cn(
-            'w-full px-3.5 py-2 text-sm rounded-lg bg-slate-50 dark:bg-surface-700/60 border border-slate-200 dark:border-surface-600 text-slate-900 dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all duration-150',
-            error && 'border-rose-500 focus:ring-rose-500/30 focus:border-rose-500',
+            'w-full px-4 py-2.5 text-sm rounded-2xl bg-warm-100 dark:bg-surface-700/60 border border-warm-200/60 dark:border-surface-600 text-warm-900 dark:text-warm-100 focus:outline-none focus:ring-2 focus:ring-coral/25 focus:border-coral transition-all duration-150',
+            error && 'border-red-500 focus:ring-red-500/25 focus:border-red-500',
             className
           )}
           {...props}
         >
           {children}
         </select>
-        {error && <p className="text-xs text-rose-500 mt-1 font-medium">{error}</p>}
+        {error && <p className="text-xs text-red-500 mt-1 font-medium">{error}</p>}
         {helperText && !error && (
-          <p className="text-xs text-slate-500 dark:text-text-muted mt-1">{helperText}</p>
+          <p className="text-xs text-warm-500 dark:text-warm-400 mt-1">{helperText}</p>
         )}
       </div>
     );

@@ -1,20 +1,27 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  CheckCircle2,
-  Calendar,
   ChevronLeft,
   ChevronRight,
   Flame,
-  Sparkles,
   Check,
   Plus,
-  SlidersHorizontal,
+  Heart,
+  Music,
+  BookOpen,
+  Footprints,
+  Moon,
+  Palette,
+  Bike,
+  Droplets,
+  Dumbbell,
+  Code2,
+  Coffee,
+  CheckCircle2,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '../components/ui/Card.jsx';
 import { Button } from '../components/ui/Button.jsx';
-import { Badge } from '../components/ui/Badge.jsx';
-import { ProgressBar } from '../components/ui/ProgressBar.jsx';
+import { CircularProgress } from '../components/ui/CircularProgress.jsx';
 import { EmptyState } from '../components/ui/EmptyState.jsx';
 import HabitLogModal from '../components/habits/HabitLogModal.jsx';
 import HabitFormModal from '../components/habits/HabitFormModal.jsx';
@@ -22,6 +29,24 @@ import habitsApi from '../services/habits.api.js';
 import logsApi from '../services/logs.api.js';
 import toast from 'react-hot-toast';
 import { cn } from '../utils/cn.js';
+
+const getHabitIcon = (iconName) => {
+  const map = {
+    Yoga: { icon: Heart, bg: 'bg-[#FFF0E8] text-[#FF6B4A]' },
+    Singing: { icon: Music, bg: 'bg-[#F2EEFF] text-[#8B5CF6]' },
+    Reading: { icon: BookOpen, bg: 'bg-[#EBF8F2] text-[#10B981]' },
+    Running: { icon: Footprints, bg: 'bg-[#FFF7E6] text-[#F59E0B]' },
+    Sleeping: { icon: Moon, bg: 'bg-[#EEF4FF] text-[#3B82F6]' },
+    Drawing: { icon: Palette, bg: 'bg-[#FFF0F4] text-[#EC4899]' },
+    Cycling: { icon: Bike, bg: 'bg-[#E6FAF7] text-[#06B6D4]' },
+    Water: { icon: Droplets, bg: 'bg-[#E8F2FF] text-[#0284C7]' },
+    Gym: { icon: Dumbbell, bg: 'bg-[#FFF0EB] text-[#EA580C]' },
+    Code: { icon: Code2, bg: 'bg-[#F3EFFC] text-[#7C3AED]' },
+    Coffee: { icon: Coffee, bg: 'bg-[#FFF8E7] text-[#D97706]' },
+    CheckCircle2: { icon: CheckCircle2, bg: 'bg-peach-light text-coral' },
+  };
+  return map[iconName] || { icon: Heart, bg: 'bg-[#FFF0E8] text-[#FF6B4A]' };
+};
 
 export const TodayPage = () => {
   const queryClient = useQueryClient();
@@ -88,288 +113,226 @@ export const TodayPage = () => {
       queryClient.invalidateQueries({ queryKey: ['analytics'] });
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to update check-in');
+      toast.error(err.message || 'Failed to update habit');
     },
   });
 
   return (
-    <div className="space-y-6">
-      {/* Date Navigation & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-text-primary">
-              Daily Tracking
-            </h1>
-            {isToday && (
-              <Badge variant="primary" className="text-[10px]">
-                Today
-              </Badge>
-            )}
-          </div>
-          <p className="text-xs text-slate-500 dark:text-text-muted mt-1">
-            Scheduled commitments and progress for {selectedDate}.
-          </p>
-        </div>
-
-        {/* Date Selector Shortcuts */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center bg-white dark:bg-surface-800 border border-slate-200 dark:border-surface-700 rounded-xl p-1 shadow-sm">
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Date Stepper & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center bg-white dark:bg-surface-800 rounded-full border border-warm-200/80 dark:border-surface-700/80 p-1 shadow-xs">
             <button
               onClick={() => handleDateShift(-1)}
-              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-text-primary hover:bg-slate-100 dark:hover:bg-surface-700 transition-colors"
+              className="p-1.5 rounded-full hover:bg-warm-100 dark:hover:bg-surface-700 text-warm-600 dark:text-warm-300 transition-colors"
               title="Previous day"
-              aria-label="Previous day"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-2 py-1 text-xs font-semibold bg-transparent text-slate-800 dark:text-text-primary border-none focus:outline-none cursor-pointer"
-            />
+            <span className="px-3 text-xs font-bold text-warm-900 dark:text-warm-100 min-w-[110px] text-center">
+              {isToday ? 'Today' : selectedDate}
+            </span>
             <button
               onClick={() => handleDateShift(1)}
-              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-text-primary hover:bg-slate-100 dark:hover:bg-surface-700 transition-colors"
+              className="p-1.5 rounded-full hover:bg-warm-100 dark:hover:bg-surface-700 text-warm-600 dark:text-warm-300 transition-colors"
               title="Next day"
-              aria-label="Next day"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-
           {!isToday && (
             <Button
               variant="outline"
-              size="sm"
+              size="xs"
               onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))}
             >
-              Today
+              Reset to Today
             </Button>
           )}
+        </div>
 
-          <Button size="sm" onClick={() => setIsCreateModalOpen(true)}>
-            <Plus className="w-4 h-4 mr-1.5" />
-            Add Habit
-          </Button>
+        <Button onClick={() => setIsCreateModalOpen(true)}>
+          <Plus className="w-4 h-4 mr-1.5 stroke-[2.5]" />
+          New Habit
+        </Button>
+      </div>
+
+      {/* Daily Progress Hero Card */}
+      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-7 bg-gradient-to-br from-[#FFF0E8] via-[#FFF5F0] to-[#FFF8F5] dark:from-[#312019] dark:via-[#261A16] dark:to-[#1E1715] border border-coral/25 shadow-[0_8px_30px_rgb(255,107,74,0.08)]">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2 max-w-[65%]">
+            <span className="text-xs font-bold uppercase tracking-wider text-warm-500 dark:text-warm-400">
+              Daily Progress
+            </span>
+            <div className="text-3xl sm:text-4xl font-extrabold text-warm-900 dark:text-warm-100 tracking-tight">
+              {summary.completed}/{summary.totalScheduled}{' '}
+              <span className="text-base sm:text-lg font-medium text-warm-500 dark:text-warm-400">
+                completed
+              </span>
+            </div>
+            <div className="flex items-center space-x-1.5 pt-1 text-xs font-semibold text-warm-600 dark:text-warm-300">
+              <Flame className="w-4 h-4 text-coral fill-coral" />
+              <span>{summary.completionRate}% completion rate for this date</span>
+            </div>
+          </div>
+
+          <div className="flex-shrink-0">
+            <CircularProgress
+              value={summary.completed}
+              max={summary.totalScheduled || 1}
+              size={92}
+              strokeWidth={8}
+              trackColor="stroke-[#FDD8CC] dark:stroke-[#4A2D23]"
+              progressColor="stroke-coral"
+              labelClassName="text-lg font-extrabold text-warm-900 dark:text-warm-100"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Daily Progress Breakdown Card */}
-      <Card className="bg-gradient-to-r from-indigo-50/50 via-white to-purple-50/30 dark:from-surface-800 dark:via-surface-800 dark:to-surface-800">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-          <div>
-            <span className="text-[11px] font-mono uppercase text-slate-400 dark:text-text-dim">
-              Scheduled
-            </span>
-            <div className="text-xl font-extrabold text-slate-900 dark:text-text-primary mt-0.5">
-              {summary.totalScheduled}
-            </div>
-          </div>
-          <div>
-            <span className="text-[11px] font-mono uppercase text-emerald-600 dark:text-emerald-400">
-              Completed
-            </span>
-            <div className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
-              {summary.completed}
-            </div>
-          </div>
-          <div>
-            <span className="text-[11px] font-mono uppercase text-amber-500">
-              Partial
-            </span>
-            <div className="text-xl font-extrabold text-amber-500 mt-0.5">
-              {summary.partial}
-            </div>
-          </div>
-          <div>
-            <span className="text-[11px] font-mono uppercase text-rose-500">
-              Skipped
-            </span>
-            <div className="text-xl font-extrabold text-rose-500 mt-0.5">
-              {summary.skipped}
-            </div>
-          </div>
-          <div>
-            <span className="text-[11px] font-mono uppercase text-indigo-600 dark:text-indigo-400">
-              Daily Score
-            </span>
-            <div className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-0.5">
-              {summary.score}%
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <ProgressBar value={summary.completionRate} size="md" />
-        </div>
-      </Card>
-
-      {/* Habit List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Habits Scheduled for {selectedDate}</CardTitle>
-          <span className="text-xs text-slate-400 font-mono">
-            {summary.completed} of {summary.totalScheduled} completed
+      {/* Habit Checklist */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-base font-bold text-warm-900 dark:text-warm-100">
+            Scheduled for {selectedDate}
+          </h2>
+          <span className="text-xs font-semibold text-warm-500">
+            {summary.completed}/{summary.totalScheduled} Done
           </span>
-        </CardHeader>
+        </div>
 
         {isLoading ? (
-          <div className="p-8 text-center text-xs text-slate-400 animate-pulse">
-            Loading scheduled habits...
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-20 bg-warm-100 dark:bg-surface-700/60 rounded-2xl animate-pulse"
+              />
+            ))}
           </div>
         ) : habits.length === 0 ? (
-          <EmptyState
-            icon={CheckCircle2}
-            title="No habits scheduled on this date"
-            description="Habits are only shown on dates matching their frequency configuration."
-            actionLabel="Create a Habit"
-            onAction={() => setIsCreateModalOpen(true)}
-          />
+          <Card className="text-center py-10">
+            <EmptyState
+              title="No habits scheduled on this date"
+              description="Adjust your schedule or add a new routine to start tracking."
+              actionLabel="Create Habit"
+              onAction={() => setIsCreateModalOpen(true)}
+            />
+          </Card>
         ) : (
-          <div className="divide-y divide-slate-100 dark:divide-surface-700/60">
-            {habits.map(({ habit, log, isCompleted, isPartial, isSkipped, currentStreak }) => (
-              <div
-                key={habit._id}
-                className="py-4 px-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 dark:hover:bg-surface-700/30 rounded-xl transition-colors"
-              >
-                {/* Left: Checkmark & Habit Info */}
-                <div className="flex items-start space-x-3.5 min-w-0">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      toggleMutation.mutate({
-                        habit,
-                        isCompleted,
-                        existingLog: log,
-                      })
-                    }
-                    className={cn(
-                      'w-7 h-7 rounded-xl flex items-center justify-center border transition-all mt-0.5',
-                      isCompleted
-                        ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/25'
-                        : 'border-slate-300 dark:border-surface-600 hover:border-indigo-500 bg-white dark:bg-surface-800'
-                    )}
-                  >
-                    {isCompleted && <Check className="w-4 h-4 stroke-[3]" />}
-                  </button>
+          <div className="space-y-2.5">
+            {habits.map(({ habit, isCompleted, existingLog }) => {
+              const iconData = getHabitIcon(habit.icon);
+              const IconComp = iconData.icon;
+              const isNumeric = habit.trackingType !== 'binary';
 
-                  <div className="min-w-0">
-                    <div className="flex items-center space-x-2">
-                      <span
-                        className={cn(
-                          'text-base font-semibold tracking-tight truncate',
-                          isCompleted
-                            ? 'line-through text-slate-400 dark:text-text-dim'
-                            : 'text-slate-900 dark:text-text-primary'
-                        )}
-                      >
-                        {habit.name}
-                      </span>
-                      <span
-                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: habit.color || '#6366f1' }}
-                      />
-                    </div>
-
-                    {habit.description && (
-                      <p className="text-xs text-slate-500 dark:text-text-muted mt-0.5 line-clamp-1">
-                        {habit.description}
-                      </p>
-                    )}
-
-                    <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                      <Badge variant="default" className="text-[10px] py-0 px-1.5 uppercase font-mono">
-                        {habit.category}
-                      </Badge>
-
-                      {habit.trackingType !== 'binary' && (
-                        <span className="text-xs text-slate-600 dark:text-text-secondary">
-                          Target: <span className="font-semibold">{habit.target.value} {habit.target.unit}</span>
-                          {log && typeof log.value === 'number' && (
-                            <span className="ml-1 text-indigo-600 dark:text-indigo-400 font-bold">
-                              (Logged: {log.value} {habit.target.unit})
-                            </span>
-                          )}
-                        </span>
-                      )}
-
-                      {habit.minimumVersion?.enabled && (
-                        <span className="text-[11px] text-amber-500 font-medium">
-                          Fallback: {habit.minimumVersion.targetValue} {habit.target.unit}
-                        </span>
-                      )}
-
-                      {currentStreak > 0 && (
-                        <span className="text-xs font-semibold text-amber-500 flex items-center">
-                          <Flame className="w-3.5 h-3.5 mr-0.5" />
-                          {currentStreak} day streak
-                        </span>
-                      )}
-                    </div>
-
-                    {log?.note && (
-                      <p className="text-xs italic text-slate-500 dark:text-text-muted mt-1.5 bg-slate-100 dark:bg-surface-700/50 p-1.5 rounded-lg max-w-lg">
-                        &ldquo;{log.note}&rdquo;
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right: Status Badges and Detailed Log Button */}
-                <div className="flex items-center space-x-2 self-end sm:self-center">
-                  {isCompleted && (
-                    <Badge variant="success" className="text-xs">
-                      {log?.completionType === 'minimum' ? 'Minimum Met' : 'Completed'}
-                    </Badge>
+              return (
+                <div
+                  key={habit._id}
+                  className={cn(
+                    'p-4 rounded-[22px] bg-white dark:bg-surface-800 border transition-all duration-200 flex items-center justify-between shadow-[0_2px_12px_rgba(40,25,20,0.03)]',
+                    isCompleted
+                      ? 'border-coral/25 bg-peach-light/20 dark:bg-surface-800/90'
+                      : 'border-warm-200/70 dark:border-surface-700/60 hover:border-warm-300'
                   )}
-                  {isPartial && (
-                    <Badge variant="warning" className="text-xs">
-                      Partial
-                    </Badge>
-                  )}
-                  {isSkipped && (
-                    <Badge variant="danger" className="text-xs">
-                      Skipped
-                    </Badge>
-                  )}
-
-                  <Button
-                    variant="secondary"
-                    size="sm"
+                >
+                  {/* Left: Squircle Icon + Habit Info */}
+                  <div
+                    className="flex items-center space-x-3.5 min-w-0 flex-1 cursor-pointer"
                     onClick={() =>
                       setLogModalState({
                         isOpen: true,
                         habit,
-                        log,
+                        log: existingLog,
                       })
                     }
                   >
-                    <SlidersHorizontal className="w-3.5 h-3.5 mr-1" />
-                    Record Details
-                  </Button>
+                    <div
+                      className={cn(
+                        'w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105',
+                        iconData.bg
+                      )}
+                    >
+                      <IconComp className="w-5 h-5 stroke-[2.2]" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <h3
+                        className={cn(
+                          'text-sm font-bold truncate transition-colors',
+                          isCompleted
+                            ? 'text-warm-900 dark:text-warm-100 line-through opacity-80'
+                            : 'text-warm-900 dark:text-warm-100'
+                        )}
+                      >
+                        {habit.name}
+                      </h3>
+
+                      <div className="flex items-center space-x-2 mt-0.5">
+                        <div className="flex items-center space-x-1 text-xs text-warm-500 font-semibold">
+                          <Flame className="w-3.5 h-3.5 text-coral fill-coral" />
+                          <span>{habit.currentStreak || 0} days</span>
+                        </div>
+                        {isNumeric && (
+                          <span className="text-[11px] text-warm-400">
+                            &bull; Target: {habit.target?.value} {habit.target?.unit}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Circular Toggle Button */}
+                  <div className="flex items-center space-x-2 flex-shrink-0 ml-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        toggleMutation.mutate({
+                          habit,
+                          isCompleted,
+                          existingLog,
+                        })
+                      }
+                      className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer',
+                        isCompleted
+                          ? 'bg-coral text-white shadow-xs shadow-coral/30'
+                          : 'border-2 border-warm-300 dark:border-surface-600 hover:border-coral bg-white dark:bg-surface-700'
+                      )}
+                      title={isCompleted ? 'Mark incomplete' : 'Complete habit'}
+                      aria-label={`Toggle habit ${habit.name}`}
+                    >
+                      {isCompleted && <Check className="w-4 h-4 stroke-[3]" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
-      </Card>
+      </div>
 
       {/* Modals */}
-      <HabitLogModal
-        isOpen={logModalState.isOpen}
-        onClose={() => setLogModalState({ isOpen: false, habit: null, log: null })}
-        habit={logModalState.habit}
-        existingLog={logModalState.log}
-        localDate={selectedDate}
-      />
+      {isCreateModalOpen && (
+        <HabitFormModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          todayDateStr={selectedDate}
+        />
+      )}
 
-      <HabitFormModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        todayDateStr={selectedDate}
-      />
+      {logModalState.isOpen && (
+        <HabitLogModal
+          isOpen={logModalState.isOpen}
+          onClose={() =>
+            setLogModalState({ isOpen: false, habit: null, log: null })
+          }
+          habit={logModalState.habit}
+          existingLog={logModalState.log}
+          localDate={selectedDate}
+        />
+      )}
     </div>
   );
 };

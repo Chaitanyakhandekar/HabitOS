@@ -3,60 +3,68 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import MobileBottomNav from '../components/layout/MobileBottomNav.jsx';
-import MobileMoreSheet from '../components/layout/MobileMoreSheet.jsx';
+import QuickActionSheet from '../components/layout/QuickActionSheet.jsx';
 
-describe('Mobile Responsive Navigation Components', () => {
-  it('renders all 5 primary bottom navigation items with labels', () => {
-    const handleOpenMore = vi.fn();
+describe('Mobile Reference Navigation & Quick Actions', () => {
+  it('renders all 5 reference bottom navigation items (Home, Calendar, +, Analytics, Profile)', () => {
+    const handleOpenQuick = vi.fn();
     render(
       <MemoryRouter initialEntries={['/dashboard']}>
-        <MobileBottomNav onOpenMore={handleOpenMore} isMoreOpen={false} />
+        <MobileBottomNav onOpenQuickAction={handleOpenQuick} />
       </MemoryRouter>
     );
 
     expect(screen.getByText('Home')).toBeInTheDocument();
-    expect(screen.getByText('Today')).toBeInTheDocument();
-    expect(screen.getByText('Habits')).toBeInTheDocument();
+    expect(screen.getByText('Calendar')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /quick actions/i })).toBeInTheDocument();
     expect(screen.getByText('Analytics')).toBeInTheDocument();
-    expect(screen.getByText('More')).toBeInTheDocument();
+    expect(screen.getByText('Profile')).toBeInTheDocument();
   });
 
-  it('triggers onOpenMore callback when clicking the More item', () => {
-    const handleOpenMore = vi.fn();
+  it('triggers onOpenQuickAction when clicking the center + button', () => {
+    const handleOpenQuick = vi.fn();
     render(
       <MemoryRouter initialEntries={['/dashboard']}>
-        <MobileBottomNav onOpenMore={handleOpenMore} isMoreOpen={false} />
+        <MobileBottomNav onOpenQuickAction={handleOpenQuick} />
       </MemoryRouter>
     );
 
-    fireEvent.click(screen.getByText('More'));
-    expect(handleOpenMore).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: /quick actions/i }));
+    expect(handleOpenQuick).toHaveBeenCalledTimes(1);
   });
 
-  it('MobileMoreSheet renders secondary destinations when open', () => {
+  it('QuickActionSheet renders action items and tools when open', () => {
     const handleClose = vi.fn();
+    const handleCreateHabit = vi.fn();
+    const handleLogModal = vi.fn();
+
     render(
       <MemoryRouter>
-        <MobileMoreSheet isOpen={true} onClose={handleClose} />
+        <QuickActionSheet
+          isOpen={true}
+          onClose={handleClose}
+          onOpenCreateHabit={handleCreateHabit}
+          onOpenLogModal={handleLogModal}
+        />
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Calendar & Heatmap')).toBeInTheDocument();
-    expect(screen.getByText('Daily Journal')).toBeInTheDocument();
+    expect(screen.getByText('New Habit')).toBeInTheDocument();
+    expect(screen.getByText('Log Habit')).toBeInTheDocument();
+    expect(screen.getByText('All Habits Management')).toBeInTheDocument();
+    expect(screen.getByText('Daily Reflection & Journal')).toBeInTheDocument();
     expect(screen.getByText('Goals & Milestones')).toBeInTheDocument();
-    expect(screen.getByText('Achievements')).toBeInTheDocument();
-    expect(screen.getByText('Settings & Data Export')).toBeInTheDocument();
-    expect(screen.getByText('Sign Out')).toBeInTheDocument();
+    expect(screen.getByText('Achievements & Badges')).toBeInTheDocument();
   });
 
-  it('MobileMoreSheet does not render when isOpen is false', () => {
+  it('QuickActionSheet does not render when isOpen is false', () => {
     const handleClose = vi.fn();
     render(
       <MemoryRouter>
-        <MobileMoreSheet isOpen={false} onClose={handleClose} />
+        <QuickActionSheet isOpen={false} onClose={handleClose} />
       </MemoryRouter>
     );
 
-    expect(screen.queryByText('Calendar & Heatmap')).not.toBeInTheDocument();
+    expect(screen.queryByText('New Habit')).not.toBeInTheDocument();
   });
 });

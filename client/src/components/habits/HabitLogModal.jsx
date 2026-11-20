@@ -23,7 +23,7 @@ export const HabitLogModal = ({ isOpen, onClose, habit, existingLog, localDate }
       const finalValue = customVal !== null ? customVal : Number(value);
       await logsApi.log({
         habitId: habit._id,
-        localDate,
+        localDate: localDate || new Date().toISOString().slice(0, 10),
         status,
         value: finalValue,
         completionType,
@@ -38,7 +38,6 @@ export const HabitLogModal = ({ isOpen, onClose, habit, existingLog, localDate }
           : `${habit.name} partial progress updated`
       );
 
-      // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['todayHabits'] });
       queryClient.invalidateQueries({ queryKey: ['todaySummary'] });
       queryClient.invalidateQueries({ queryKey: ['habits'] });
@@ -75,127 +74,108 @@ export const HabitLogModal = ({ isOpen, onClose, habit, existingLog, localDate }
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Log Check-in: ${habit.name}`}
-      description={`Record progress for ${localDate}`}
+      title={habit.name}
+      description={`Record progress for ${localDate || 'today'}`}
       maxWidth="max-w-md"
     >
-      <div className="space-y-4">
-        {/* Habit Target Summary */}
-        <div className="p-3 rounded-xl bg-slate-50 dark:bg-surface-700/50 border border-slate-200/60 dark:border-surface-600/60 flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 dark:text-text-dim">
-              Habit Target
-            </span>
-            <p className="text-sm font-semibold text-slate-800 dark:text-text-primary">
-              {isNumeric ? `${habit.target.value} ${habit.target.unit}` : 'Binary Completion'}
-            </p>
-          </div>
-          {habit.minimumVersion?.enabled && (
-            <div className="text-right">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-amber-500">
-                Fallback Version
-              </span>
-              <p className="text-xs font-medium text-slate-600 dark:text-text-secondary">
-                {habit.minimumVersion.targetValue} {habit.target.unit}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Numeric Input */}
+      <div className="space-y-5">
+        {/* Numeric value control */}
         {isNumeric && (
-          <div>
-            <Input
-              label={`Amount (${habit.target.unit})`}
-              type="number"
-              step="any"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="e.g. 3"
-            />
+          <div className="p-4 rounded-2xl bg-peach-light/50 dark:bg-surface-700/50 border border-coral/15 space-y-2">
+            <div className="flex justify-between items-center text-xs font-bold text-warm-800 dark:text-warm-200">
+              <span>Current Progress</span>
+              <span>Target: {habit.target?.value} {habit.target?.unit}</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Input
+                type="number"
+                step="any"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                className="text-lg font-bold text-center"
+              />
+              <span className="text-xs font-bold text-warm-500 uppercase">
+                {habit.target?.unit}
+              </span>
+            </div>
           </div>
         )}
 
-        {/* Optional Note */}
+        {/* Note */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-text-secondary mb-1.5">
+          <label className="block text-xs font-semibold text-warm-800 dark:text-warm-200 mb-1.5">
             Check-in Note (Optional)
           </label>
-          <textarea
+          <input
+            type="text"
+            placeholder="How did it feel?"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Add context, reflections, or notes..."
-            rows={2}
-            className="w-full px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-surface-700/60 border border-slate-200 dark:border-surface-600 text-slate-900 dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            className="w-full px-4 py-2.5 text-sm rounded-full bg-warm-100 dark:bg-surface-700/60 border border-warm-200/70 dark:border-surface-600 text-warm-900 dark:text-warm-100 focus:outline-none focus:ring-2 focus:ring-coral/25 focus:border-coral transition-all"
           />
         </div>
 
-        {/* Completion Buttons */}
-        <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-surface-700">
+        {/* Action Buttons */}
+        <div className="grid grid-cols-1 gap-2.5 pt-2">
+          {/* Full Completion */}
           <Button
-            className="w-full"
-            variant="success"
+            onClick={() =>
+              handleSave(
+                'completed',
+                'full',
+                isNumeric ? Number(value) : habit.target?.value || 1
+              )
+            }
             isLoading={isLoading}
-            onClick={() => handleSave('completed', 'full', isNumeric ? Number(value) : 1)}
+            className="w-full py-3"
           >
             <CheckCircle2 className="w-4 h-4 mr-2" />
-            Complete Full Target ({isNumeric ? `${value} ${habit.target.unit}` : 'Done'})
+            Complete Full Target
           </Button>
 
-          {habit.minimumVersion?.enabled && (
+          {/* Minimum version if configured */}
+          {habit.minVersion?.enabled && (
             <Button
-              className="w-full"
               variant="secondary"
-              isLoading={isLoading}
               onClick={() =>
-                handleSave('completed', 'minimum', habit.minimumVersion.targetValue)
+                handleSave(
+                  'completed',
+                  'minimum',
+                  habit.minVersion.target
+                )
               }
+              isLoading={isLoading}
+              className="w-full py-2.5"
             >
-              <Sparkles className="w-4 h-4 mr-2 text-amber-500" />
-              Complete Minimum Version ({habit.minimumVersion.targetValue} {habit.target.unit})
+              <Sparkles className="w-4 h-4 mr-2 text-coral" />
+              Minimum Version ({habit.minVersion.target} {habit.target?.unit})
             </Button>
           )}
 
-          <div className="flex space-x-2 pt-1">
-            {isNumeric && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                disabled={isLoading}
-                onClick={() => handleSave('partial', 'partial', Number(value))}
-              >
-                Save Partial
-              </Button>
-            )}
+          {/* Skip option */}
+          <Button
+            variant="ghost"
+            onClick={() => handleSave('skipped', 'skipped', 0)}
+            isLoading={isLoading}
+            className="w-full py-2 text-warm-500"
+          >
+            <FastForward className="w-4 h-4 mr-2" />
+            Skip (Rest Day / Planned)
+          </Button>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex-1 text-slate-500"
-              disabled={isLoading}
-              onClick={() => handleSave('skipped', 'skip', 0)}
-            >
-              <FastForward className="w-3.5 h-3.5 mr-1.5" />
-              Skip Habit
-            </Button>
-          </div>
-        </div>
-
-        {/* Undo Option */}
-        {existingLog && (
-          <div className="pt-2 text-center border-t border-slate-100 dark:border-surface-700">
+          {/* Undo if existing */}
+          {existingLog && (
             <button
               type="button"
               onClick={handleDelete}
               disabled={isLoading}
-              className="inline-flex items-center text-xs text-rose-500 hover:text-rose-600 hover:underline"
+              className="text-xs text-red-500 hover:text-red-600 font-semibold flex items-center justify-center py-2 transition-colors cursor-pointer"
             >
-              <Trash2 className="w-3.5 h-3.5 mr-1" />
-              Undo and Remove Check-in
+              <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+              Undo / Delete Check-in
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </Modal>
   );

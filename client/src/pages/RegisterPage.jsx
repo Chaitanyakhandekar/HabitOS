@@ -65,16 +65,16 @@ export const RegisterPage = () => {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-text-primary">
+        <h2 className="text-xl font-extrabold text-warm-900 dark:text-warm-100">
           Create Account
         </h2>
-        <p className="text-xs text-slate-500 dark:text-text-muted mt-1">
-          Start tracking with genuine metrics and data-driven routines.
+        <p className="text-xs text-warm-500 dark:text-warm-400 mt-1">
+          Start building mindful habits with genuine tracking and behavioral analytics.
         </p>
       </div>
 
       {errorMsg && (
-        <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-xs text-rose-700 dark:text-rose-300">
+        <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-xs text-red-700 dark:text-red-300">
           {errorMsg}
         </div>
       )}
@@ -112,13 +112,9 @@ export const RegisterPage = () => {
           {...register('confirmPassword')}
         />
 
-        <div className="text-[11px] text-slate-400 dark:text-text-dim">
-          Detected timezone: <span className="font-mono">{detectedTimezone}</span>
-        </div>
-
         <Button
           type="submit"
-          className="w-full mt-2"
+          className="w-full mt-3 py-3"
           size="lg"
           isLoading={isLoading}
         >
@@ -127,13 +123,13 @@ export const RegisterPage = () => {
         </Button>
       </form>
 
-      <div className="mt-6 text-center text-xs text-slate-500 dark:text-text-muted">
+      <div className="mt-6 text-center text-xs text-warm-500 dark:text-warm-400">
         Already have an account?{' '}
         <Link
           to="/login"
-          className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+          className="font-bold text-coral hover:underline"
         >
-          Sign In
+          Sign in here
         </Link>
       </div>
     </div>

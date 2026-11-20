@@ -11,6 +11,9 @@ import {
   Download,
   Trash2,
   AlertTriangle,
+  Sun,
+  Moon,
+  Sparkles,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '../components/ui/Card.jsx';
 import { Button } from '../components/ui/Button.jsx';
@@ -58,7 +61,7 @@ export const SettingsPage = () => {
     user?.settings?.weekStartsOn || 'monday'
   );
 
-  // Notification State
+  // Notification Form State
   const [notificationsEnabled, setNotificationsEnabled] = useState(
     user?.notifications?.enabled ?? true
   );
@@ -175,22 +178,22 @@ export const SettingsPage = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-text-primary">
-          Account & Preferences
+        <h1 className="text-2xl font-extrabold tracking-tight text-warm-900 dark:text-warm-100">
+          Profile & Preferences
         </h1>
-        <p className="text-xs text-slate-500 dark:text-text-muted mt-1">
-          Manage your personal identity, timezone calculations, theme, and data exports.
+        <p className="text-xs text-warm-500 dark:text-warm-400 mt-1">
+          Manage your personal account, timezone calculations, wellness appearance, and data exports.
         </p>
       </div>
 
       {/* 1. Profile Information */}
-      <Card>
+      <Card className="rounded-[26px] p-6">
         <CardHeader>
           <div className="flex items-center space-x-2">
-            <User className="w-4 h-4 text-indigo-500" />
+            <User className="w-4 h-4 text-coral" />
             <CardTitle>Profile Details</CardTitle>
           </div>
         </CardHeader>
@@ -236,10 +239,10 @@ export const SettingsPage = () => {
       </Card>
 
       {/* 2. Security: Change Password */}
-      <Card>
+      <Card className="rounded-[26px] p-6">
         <CardHeader>
           <div className="flex items-center space-x-2">
-            <KeyRound className="w-4 h-4 text-indigo-500" />
+            <KeyRound className="w-4 h-4 text-coral" />
             <CardTitle>Security & Password</CardTitle>
           </div>
         </CardHeader>
@@ -283,17 +286,17 @@ export const SettingsPage = () => {
       </Card>
 
       {/* 3. Appearance & Calendar Format */}
-      <Card>
+      <Card className="rounded-[26px] p-6">
         <CardHeader>
           <div className="flex items-center space-x-2">
-            <Palette className="w-4 h-4 text-indigo-500" />
+            <Palette className="w-4 h-4 text-coral" />
             <CardTitle>Appearance & Calendar Display</CardTitle>
           </div>
         </CardHeader>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-text-secondary mb-2">
+            <label className="block text-xs font-bold text-warm-800 dark:text-warm-200 mb-2">
               Color Theme
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -301,25 +304,27 @@ export const SettingsPage = () => {
                 type="button"
                 onClick={() => setTheme('dark')}
                 className={cn(
-                  'p-3 rounded-xl border text-xs font-bold text-center transition-all',
+                  'p-3 rounded-2xl border text-xs font-bold text-center transition-all flex items-center justify-center space-x-2',
                   theme === 'dark'
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                    : 'bg-surface-800 text-slate-400 border-surface-700'
+                    ? 'bg-coral text-white border-coral shadow-xs'
+                    : 'bg-warm-100 dark:bg-surface-800 text-warm-600 dark:text-warm-300 border-warm-200 dark:border-surface-700'
                 )}
               >
-                Dark Theme
+                <Moon className="w-4 h-4" />
+                <span>Dark Theme</span>
               </button>
               <button
                 type="button"
                 onClick={() => setTheme('light')}
                 className={cn(
-                  'p-3 rounded-xl border text-xs font-bold text-center transition-all',
+                  'p-3 rounded-2xl border text-xs font-bold text-center transition-all flex items-center justify-center space-x-2',
                   theme === 'light'
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                    : 'bg-slate-100 text-slate-700 border-slate-200'
+                    ? 'bg-coral text-white border-coral shadow-xs'
+                    : 'bg-warm-100 text-warm-700 border-warm-200'
                 )}
               >
-                Light Theme
+                <Sun className="w-4 h-4" />
+                <span>Light Theme</span>
               </button>
             </div>
           </div>
@@ -341,29 +346,29 @@ export const SettingsPage = () => {
       </Card>
 
       {/* 4. Notification Preferences */}
-      <Card>
+      <Card className="rounded-[26px] p-6">
         <CardHeader>
           <div className="flex items-center space-x-2">
-            <Bell className="w-4 h-4 text-indigo-500" />
+            <Bell className="w-4 h-4 text-coral" />
             <CardTitle>Notification Preferences</CardTitle>
           </div>
         </CardHeader>
 
         <div className="space-y-4 mt-2">
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-surface-700/40">
+          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-peach-light/40 dark:bg-surface-700/40 border border-coral/15">
             <div>
-              <span className="text-xs font-semibold text-slate-900 dark:text-text-primary">
+              <span className="text-xs font-bold text-warm-900 dark:text-warm-100">
                 Daily Habit Reminders
               </span>
-              <p className="text-[11px] text-slate-500 dark:text-text-muted">
-                Receive local browser notifications at your scheduled habit reminder times.
+              <p className="text-[11px] text-warm-500 dark:text-warm-400">
+                Receive browser notifications at your scheduled habit reminder times.
               </p>
             </div>
             <input
               type="checkbox"
               checked={notificationsEnabled}
               onChange={(e) => setNotificationsEnabled(e.target.checked)}
-              className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+              className="w-5 h-5 accent-coral rounded-md cursor-pointer"
             />
           </div>
 
@@ -400,48 +405,49 @@ export const SettingsPage = () => {
         </div>
       </Card>
 
-      {/* 5. Data Export (CSV / JSON) */}
-      <Card>
+      {/* 5. Data Export & Portability */}
+      <Card className="rounded-[26px] p-6">
         <CardHeader>
           <div className="flex items-center space-x-2">
-            <Download className="w-4 h-4 text-indigo-500" />
-            <CardTitle>Personal Data Export</CardTitle>
+            <Download className="w-4 h-4 text-coral" />
+            <CardTitle>Data Portability (CSV Export)</CardTitle>
           </div>
         </CardHeader>
 
-        <p className="text-xs text-slate-500 dark:text-text-muted mt-1 mb-4">
-          Export your complete behavioral records for personal archival or spreadsheet analysis.
-        </p>
+        <div className="space-y-3 mt-2">
+          <p className="text-xs text-warm-500 dark:text-warm-400 leading-relaxed">
+            Download your raw behavioral tracking data as formatted CSV files. You own your data.
+          </p>
 
-        <div className="flex flex-wrap gap-3">
-          <Button variant="outline" size="sm" onClick={handleExportLogsCSV}>
-            <Download className="w-3.5 h-3.5 mr-1.5" />
-            Export Habit Check-in Logs (CSV)
-          </Button>
-
-          <Button variant="outline" size="sm" onClick={handleExportJournalCSV}>
-            <Download className="w-3.5 h-3.5 mr-1.5" />
-            Export Journal Entries (CSV)
-          </Button>
+          <div className="flex flex-wrap gap-3 pt-1">
+            <Button variant="secondary" size="sm" onClick={handleExportLogsCSV}>
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              Export Habit Logs (CSV)
+            </Button>
+            <Button variant="secondary" size="sm" onClick={handleExportJournalCSV}>
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              Export Journal Reflections (CSV)
+            </Button>
+          </div>
         </div>
       </Card>
 
-      {/* 6. Danger Zone: Account Deletion */}
-      <Card className="border-rose-200 dark:border-rose-950/60 bg-rose-50/20 dark:bg-rose-950/10">
+      {/* 6. Danger Zone */}
+      <Card className="rounded-[26px] p-6 border-red-200/80 dark:border-red-950/60 bg-red-50/20 dark:bg-red-950/10">
         <CardHeader>
-          <div className="flex items-center space-x-2 text-rose-600">
+          <div className="flex items-center space-x-2 text-red-600">
             <AlertTriangle className="w-4 h-4" />
-            <CardTitle className="text-rose-600">Danger Zone</CardTitle>
+            <CardTitle className="text-red-600">Danger Zone</CardTitle>
           </div>
         </CardHeader>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2">
           <div>
-            <span className="text-xs font-semibold text-slate-900 dark:text-text-primary">
+            <h4 className="text-xs font-bold text-warm-900 dark:text-warm-100">
               Delete Account & All Behavioral Data
-            </span>
-            <p className="text-xs text-slate-500 dark:text-text-muted mt-0.5">
-              Permanently purges habits, historical logs, reflections, goals, and badges.
+            </h4>
+            <p className="text-[11px] text-warm-500 dark:text-warm-400 mt-0.5">
+              Permanently purges habits, check-in history, journal entries, and achievements.
             </p>
           </div>
           <Button
@@ -459,25 +465,24 @@ export const SettingsPage = () => {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Confirm Account Deletion"
-        description="This action is irreversible and purges all personal tracking data."
-        maxWidth="max-w-md"
+        title="Permanently Delete Account?"
+        description="This action is irreversible. All your habits, streaks, and data will be destroyed."
       >
         <div className="space-y-4">
-          <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
-            Type <strong className="font-mono">DELETE</strong> in the field below to confirm:
+          <p className="text-xs text-warm-600 dark:text-warm-400">
+            To confirm deletion, please type <strong className="text-red-600">DELETE</strong> below:
           </p>
           <Input
             value={deleteConfirmationText}
             onChange={(e) => setDeleteConfirmationText(e.target.value)}
-            placeholder="DELETE"
+            placeholder="Type DELETE"
           />
-          <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100 dark:border-surface-700">
+          <div className="flex justify-end space-x-2 pt-2">
             <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
               Cancel
             </Button>
             <Button variant="danger" onClick={handleDeleteAccount}>
-              Confirm Permanent Deletion
+              Confirm Deletion
             </Button>
           </div>
         </div>
